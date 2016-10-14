@@ -1,0 +1,227 @@
+﻿﻿<div class="trainer-method">
+    <form novalidate name="editClassForm" id="editClassForm">
+        <div class="general-form">
+            <div class="form-group">
+                <label class="content-secondary-header">General</label><br />
+                <svg height="10" width="400" class="line-under-general-and-trainer ">
+                    <line x1="0" y1="0" x2="183" y2="0" class="line" />
+                </svg>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group required" ng-if="hasEditClassPermission() && !isCancel && !isClassDone">
+                        <label class="col-md-4 field-name-add-class">Name</label>
+                        <div class="col-md-8 class-info">
+                            <input type="text" class="form-control class-info-type" maxlength="100"
+                                   name="className" ng-model="class.Name" required>
+                            <span class="validate-message" ng-show="editClassForm.$submitted || editClassForm.className.$dirty">
+                                <span ng-show="editClassForm.className.$error.required">
+                                    Class names is required
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="!hasEditClassPermission() || isCancel || isClassDone">
+                        <label class="col-md-4 field-name-add-class">Name</label>
+                        <div class="col-md-8 class-info field-class-name">
+                            {{class.Name}}
+                        </div>
+                    </div>
+                    <div class="form-group required" ng-show="hasEditClassPermission()  && !isCancel && !isClassDone">
+                        <label class="col-md-4 field-name-add-class">Registration Deadline</label>
+                        <div class="col-md-8 class-info">
+                            <div class="dropdown">
+                                <div class="input-group class-info-type">
+                                    <input type="text" class="form-control register-deadline-info" name="registrationdeadline"
+                                           datetime-picker="MMM dd, yyyy - HH:mm" ng-disabled="isClassOpen()"
+                                           ng-model="class.RegistrationDueTime" is-open="isCalendarOpen" required>
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default calendar-info"
+                                                ng-disabled="isClassOpen()" ng-click="openCalendar($event, 'date3')">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                                <span class="validate-message" ng-show="editClassForm.$submitted || editClassForm.registrationdeadline.$dirty">
+                                    <span ng-show="editClassForm.registrationdeadline.$error.required">
+                                        Registration Deadline is required
+                                    </span>
+                                    <span ng-show="editClassForm.registrationdeadline.$error.datetime">
+                                        Time format is Jan 08, 2016 - 12:00
+                                    </span>
+                                    <span ng-show="!isPastDate() && class.StartTime > currentDate 
+                                                   || !isPastDate() && class.StartTime == null">
+                                        Registration Deadline should not be in the past
+                                    </span>
+                                    <span ng-show="isLessThanStartTime() && isPastDate()
+                                          && !editClassForm.registrationdeadline.$error.datetime
+                                          && !editClassForm.registrationdeadline.$error.required">
+                                        Registration Deadline must be less than {{class.StartTime}}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="!hasEditClassPermission()  || isCancel || isClassDone">
+                        <label class="col-md-4 field-name-add-class">Registration Deadline</label>
+                        <div class="col-md-8 class-info">
+                            {{class.RegistrationDueTime}}
+                        </div>
+                    </div>
+                    <div class="form-group required" ng-if="hasEditClassPermission() && !isCancel && !isClassDone">
+                        <label class="col-md-4 field-name-add-class">Available Seats</label>
+                        <div class="col-md-8 class-info">
+                            <div class="input-group number-spinner class-info-type">
+                                <input type="number" class="form-control" name=" capacity" ng-model="class.Capacity"
+                                       ng-change="onCapacityChange()" max="10000"  required>
+                            </div>
+                            <span class="validate-message" ng-show="editClassForm.$submitted || editClassForm.capacity.$dirty">
+                                <span ng-show="editClassForm.capacity.$error.required">
+                                    Available Seats is required
+                                </span>
+                                <span ng-show="isCapacityErrorMin">
+                                    Available Seats must be greater than 0
+                                </span>
+                                <span ng-show="editClassForm.capacity.$error.number">
+                                    Available Seats is invalid
+                                </span>
+                                <span ng-show="editClassForm.capacity.$error.max">
+                                    Available Seats is too great
+                                </span>
+                                <span ng-show="isCapacityDecimal && !isCapacityErrorMin">
+                                    Available Seats is not decimal number
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="!hasEditClassPermission()  || isCancel || isClassDone">
+                        <label class="col-md-4 field-name-add-class">Available Seats</label>
+                        <div class="col-md-8 class-info">
+                            {{class.Capacity}}
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="hasEditClassPermission() && !isCancel && !isClassDone">
+                        <label class="col-md-4 field-name-add-class">Extend For</label>
+                        <div class="col-md-8 class-info">
+                            <select name="extendForClass" class="form-control class-info-type" id="selectClass"
+                                    ng-options="classOfCourse.Id as classOfCourse.Name for classOfCourse in allClassOfCourse"
+                                    ng-model="class.ExtendForClassId">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" ng-if="!hasEditClassPermission() || isCancel || isClassDone">
+                        <label class="col-md-4 field-name-add-class">Extend For</label>
+                        <div class="col-md-8 class-info">
+                            {{class.NameOfClassExtend}}
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group required" ng-if="hasEditClassPermission()  && !isCancel && !isClassDone">
+                    <div class="col-md-6">
+                        <label class="col-md-4 name-methodology-introduction">Methodology</label>
+                        <div class="col-md-8 text-area-add-class">
+                            <textarea type="text" class="form-control class-info-type-methodology" name="methodology"
+                                      ng-model="class.Methodology" rows="3" maxlength="250" required></textarea>
+                            <span class="validate-message" ng-show="editClassForm.$submitted || editClassForm.methodology.$dirty">
+                                <span ng-show="editClassForm.methodology.$error.required">
+                                    Methodology is required
+                                </span>
+                                <span ng-show="editClassForm.methodology.$error.maxlength">
+                                    Max length of Methodology is 250 character
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" ng-if="!hasEditClassPermission()  || isCancel || isClassDone">
+                    <div class="col-md-6">
+                        <label class="col-md-4 name-methodology-introduction">Methodology</label>
+                        <div class="col-md-8 text-area-add-class">
+                            <span ng-bind-html="class.Methodology | convertHtml"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="content-secondary-header">Trainer</label><br />
+                <svg height="10" width="400" class="line-under-general-and-trainer">
+                    <line x1="0" y1="0" x2="183" y2="0" class="line" />
+                </svg>
+            </div>
+            <div class="well well-trainer" ng-repeat="classTrainer in classTrainers track by $index">
+                <div class="row">
+                    <div class="col-md-6 form-group required" ng-if="hasEditClassPermission()  && !isCancel && !isClassDone">
+                        <label class="col-md-4">Trainer</label>
+                        <div class="col-md-8">
+                            <input id="classTrainer{{$index}}" class="form-control trainer-info-type"
+                                   ng-model="classTrainers[$index]" name="trainerName{{$index}}" required
+                                   ng-blur="onBlur($index, editClassForm['trainerName'+$index])"
+                                   typeahead="user as user.FullName for user in allUsers | filter:$viewValue | limitTo:8"
+                                   typeahead-editable="false"
+                                   typeahead-select-on-blur="true"
+                                   typeahead-select-on-exact="true"
+                                   typeahead-on-select="onSelect($item, $index,editClassForm['trainerName'+$index])"
+                                   typeahead-template-url=' tpl.html' autocomplete="off">
+                            <span class="validate-message" ng-show="editClassForm.$submitted || editClassForm['trainerName'+$index].$dirty">
+                                <span ng-show="editClassForm['trainerName'+$index].$error.required" class="margin-left-15px">
+                                    Trainer is missing or invalid
+                                </span>
+                                <span ng-show="editClassForm['trainerName'+$index].$error.duplicate
+                                                 && classTrainers[$index] != null" class="margin-left-15px">
+                                    Trainer is duplicated
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 form-group" ng-if="!hasEditClassPermission()  || isCancel || isClassDone">
+                        <label class="col-md-4">Trainer</label>
+                        <div class="col-md-8">
+                            {{classTrainer.FullName}}
+                        </div>
+                    </div>
+                    <div class="col-md-6 form-group required" ng-if="hasEditClassPermission() && !isCancel && !isClassDone">
+                        <label class="col-md-4 name-methodology-introduction">Trainer Introduction</label>
+                        <div class="col-md-8">
+                            <textarea type="text" ng-model="classTrainer.Introduction" name="introduction{{$index}}"
+                                      class="form-control introduce-info-type" rows="3" maxlength="500" required></textarea>
+                            <span class="validate-message" ng-show="editClassForm.$submitted || editClassForm['introduction'+$index].$dirty">
+                                <span ng-show="editClassForm['introduction'+$index].$error.required" class="margin-left-15px">
+                                    Trainer introduction is required
+                                </span>
+                                <span ng-show="editClassForm['introduction'+$index].$error.maxlength">
+                                    Max length of Trainer introduction is 500 character
+                                </span>
+                            </span>
+                            <i class="glyphicon glyphicon-remove remove-trainer" style="cursor:pointer"
+                               ng-click="removeClassTrainer($index, editClassForm)" ng-if="classTrainers.length > 1 && hasEditClassPermission()"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-6 form-group" ng-if="!hasEditClassPermission()  || isCancel || isClassDone">
+                        <label class="col-md-4 name-methodology-introduction">Trainer Introduction</label>
+                        <div class="col-md-8">
+                            <span ng-bind-html="classTrainer.Introduction | convertHtml"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" ng-if="hasEditClassPermission()  && !isCancel && !isClassDone">
+                <!--8 is max of trainers can be added on a class-->
+                <a href="" ng-if="classTrainers.length < 8" ng-click="addClassTrainer()" class="btn-icon-only icon add-trainer-color">
+                    <i class="fa fa-plus-circle"></i>
+                    Add Trainer
+                </a>
+            </div>
+        </div>
+        <div class="float-right-button" ng-if="hasEditClassPermission() && !isCancel && !isClassDone">
+            <input type="submit" class="btn btn-primary-blue"
+                   ng-disabled="isSendingRequest" ng-click="save(editClassForm)" value="Save">
+        </div>
+    </form>
+</div>
+
+<script type="text/ng-template" id="tpl.html">
+    <a class="btn dropdown-autocomplete" data-toggle="dropdown">
+        {{match.model.FullName + " ( " + match.model.Username + " ) " }}
+    </a>
+</script>

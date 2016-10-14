@@ -1,0 +1,159 @@
+﻿<div class="edit-survey line-top">
+    <form class="form-horizontal" novalidate name="editSurveyForm" id="editSurveyForm">
+        <div class="row general-form">
+            <div class="form-group required">
+                <label class="col-md-2">Title</label>
+                <div class="col-md-9">
+                    <input type="text" class="form-control" name="title" maxlength="100"
+                           ng-disabled="isPastDate(oldStartTime)"
+                           ng-model="editSurvey.Title" required />
+                    <span class="validate-message" ng-if="editSurveyForm.$submitted || editSurveyForm.title.$dirty">
+                        <span ng-if="editSurveyForm.title.$error.required">
+                            Title is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group required">
+                <label class="col-md-2">Feedback type</label>
+                <div class="col-md-4 dropdown">
+                    <select class="form-control" name="surveyType" id="type"
+                            ng-options="type.Id as type.Name for type in surveyTypes"
+                            ng-model="editSurvey.SurveyType"
+                            ng-if="!isPastDate(editSurvey.StartTime)" required>
+                        <option value="" hidden></option>
+                    </select>
+                    <select class="form-control" name="surveyType" id="type"
+                            ng-options="type.Id as type.Name for type in surveyTypes"
+                            ng-model="editSurvey.SurveyType"
+                            ng-disabled="isPastDate(oldStartTime)" ng-if="isPastDate(editSurvey.StartTime)">
+                        <option value="" hidden></option>
+                    </select>
+                    <span class="validate-message"
+                          ng-show="editSurveyForm.$submitted || editSurveyForm.surveyType.$touched">
+                        <span ng-show="editSurveyForm.surveyType.$error.required">
+                            Feedback type is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group required">
+                <label class="col-md-2">Session</label>
+                <div class="col-md-4 dropdown">
+                    <select class="form-control" name="session" id="selectSession"
+                            ng-options="session.Id as session.Name for session in sessions"
+                            ng-model="editSurvey.ClassSessionId"
+                            ng-change="onChangeSession(editSurvey.ClassSessionId)"
+                            ng-disabled="isPastDate(oldStartTime)" required>
+                        <option value="" hidden></option>
+                    </select>
+                    <span class="validate-message" ng-show="editSurveyForm.$submitted || editSurveyForm.session.$touched">
+                        <span ng-show="editSurveyForm.session.$error.required">
+                            Session is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group required">
+                <label class="col-md-2">Available From</label>
+                <div class="col-md-4">
+                    <div class="dropdown">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="startDate"
+                                   id="inputStarDate" autocomplete="off"
+                                   datetime-picker="MMM dd, yyyy - HH:mm"
+                                   ng-model="editSurvey.StartTime" is-open="isOpenStartDate"
+                                   ng-change="onStartTimeChange()"
+                                   ng-disabled="isPastDate(oldStartTime)" required />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default"
+                                        ng-disabled="isPastDate(oldStartTime)"
+                                        ng-click="openStartDateCalendar($event, 'editSurvey.StartTime')">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    <span class="validate-message" ng-show="editSurveyForm.$submitted || editSurveyForm.startDate.$dirty">
+                        <span ng-show="editSurveyForm.startDate.$error.required">
+                            Start time is required
+                        </span>
+                        <span ng-show="editSurveyForm.startDate.$error.datetime">
+                            Time format is Jan 08, 2016 - 12:00
+                        </span>
+                        <span ng-show="isPastDate(editSurvey.StartTime) && getcurrentDate() < editSurvey.StartTime">
+                            Start time should not be in the past
+                        </span>
+                    </span>
+                </div>
+                <label class="col-md-1 align-text-center">Until</label>
+                <div class="col-md-4">
+                    <div class="dropdown">
+                        <div class="input-group">
+                            <input type="text" class="form-control" ng-disabled="isClosed"
+                                   name="endDate" id="inputEndDate" autocomplete="off"
+                                   datetime-picker="MMM dd, yyyy - HH:mm"
+                                   ng-model="editSurvey.EndTime" is-open="isOpenEndDate" required />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-disabled="isClosed"
+                                        ng-click="openEndDateCalendar($event, 'editSurvey.EndTime')">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <span class="validate-message" ng-show="editSurveyForm.$submitted || editSurveyForm.endDate.$dirty">
+                            <span ng-show="editSurveyForm.endDate.$error.required">
+                                End time is required
+                            </span>
+                            <span ng-show="editSurveyForm.endDate.$error.datetime">
+                                Time format is Jan 08, 2016 - 12:00
+                            </span>
+                            <span ng-show="isStartTimeGreaterThanEndTime(editSurvey.EndTime, editSurvey.StartTime)">
+                                End time must be greater than start time
+                            </span>
+                            <span ng-show="isPastDate(editSurvey.EndTime) && !isStartTimeGreaterThanEndTime(editSurvey.EndTime, editSurvey.StartTime)">
+                                End time should not be in the past
+                            </span>
+                            <!--can't shorten endtime when feedback start (Not remove when need)-->
+                            <!--<span ng-show="isNewEndTimeAfterOldEndTime(editSurvey.EndTime, oldEndTime)
+                                  && !isStartTimeGreaterThanEndTime(editSurvey.EndTime, editSurvey.StartTime)
+                                  && !isPastDate(editSurvey.EndTime) && isPastDate(editSurvey.StartTime)">
+                                End time should not be less than {{oldEndTime}}
+                            </span>-->
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group required">
+                <label class="col-md-2">Description</label>
+                <div class="col-md-9">
+                    <textarea class="form-control text-area" rows="4"
+                              ng-model="editSurvey.Description" name="description"
+                              ng-disabled="isPastDate(oldStartTime)" required></textarea>
+                    <span class="validate-message" ng-show="editSurveyForm.$submitted || editSurveyForm.description.$dirty">
+                        <span ng-show="editSurveyForm.description.$error.required">
+                            Description is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2">Thank-you Message</label>
+                <div class="col-md-9">
+                    <textarea class="form-control text-area" rows="4" ng-model="editSurvey.ThankYou"
+                              ng-disabled="isPastDate(oldStartTime)"></textarea>
+                </div>
+            </div>
+        </div><br />
+        <div class="row">
+            <div class="float-right">
+                <input type="button" class="btn btn-primary-gray"
+                       ng-click="cancel()" value="Cancel">
+                <input type="submit" class="btn btn-primary-blue" ng-disabled="isSendingRequest"
+                       ng-click="save(editSurveyForm)" value="Save">
+            </div>
+        </div>
+    </form>
+</div>

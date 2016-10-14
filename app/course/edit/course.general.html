@@ -1,0 +1,261 @@
+﻿<div class="general-course">
+    <form class="general-form form-horizontal" novalidate name="courseForm" id="courseForm">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group required">
+                    <label for="inputName" class="col-md-4 form-control-label">Course Name</label>
+
+                    <div class="col-md-7">
+                        <input type="text" class="form-control"
+                               id="inputName" name="name" ng-model="course.Name" ng-maxlength="100"
+                               ng-remote-validate="CourseGeneral/CheckCourseNameExistence"
+                               required autocomplete="off" />
+
+                        <span class="validate-message" ng-show="courseForm.$submitted || courseForm.name.$touched">
+                            <span ng-show="courseForm.name.$error.required">
+                                Course name is required
+                            </span>
+                        </span>
+
+                        <span class="validate-message" ng-show="courseForm.name.$dirty && courseForm.name.$invalid">
+                            <span ng-show="courseForm.name.$error.maxlength">
+                                Max length of course name is 100 character
+                            </span>
+                            <span ng-show="courseForm.name.$error.ngRemoteValidate">
+                                Course name already exists
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group required">
+                    <label for="selectDomain" class="col-md-4 form-control-label">Domain</label>
+
+                    <div class="col-md-7 dropdown">
+                        <select class="form-control" name="domain" id="selectDomain"
+                                ng-options="domain.Id as domain.Name for domain in domains"
+                                ng-model="course.DomainId" required>
+                            <option value="" hidden></option>
+                        </select>
+
+                        <span class="validate-message" ng-show="courseForm.$submitted || courseForm.domain.$touched">
+                            <span ng-show="courseForm.domain.$error.required">
+                                Domain is required
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-4">
+                        <label for="inputFile" class="form-control-label">Course Image</label>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div>
+                            <img class="course-image" ng-src="{{imageUrl}}" ngf-thumbnail="picFile" />
+
+                            <span class="btn btn-primary-blue btn-file">
+                                Browse
+                                <input type="file" name="file" id="inputFile" ngf-select
+                                       ng-model="picFile" accept="image/*" ngf-max-size="1MB" />
+                            </span>
+                        </div>
+
+                        <span class="validate-message" ng-show="courseForm.file.$invalid">
+                            <span ng-show="courseForm.file.$error.maxSize">
+                                Image file must be less than 1MB
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="textareaTargetTrainees" class="col-md-4 form-control-label">Target Trainees</label>
+
+                    <div class="col-md-7">
+                        <textarea type="text" class="form-control textarea-target-trainees" id="textareaTargetTrainees"
+                                  name="targetTrainees" ng-model="course.TargetTrainees"
+                                  rows="3" ng-maxlength="250"></textarea>
+
+                        <span class="validate-message" ng-show="courseForm.targetTrainees.$invalid">
+                            <span ng-show="courseForm.targetTrainees.$error.maxlength">
+                                Max length of target trainees is 250 character
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group required">
+                    <label for="inputDuration" class="col-md-4 form-control-label">Duration</label>
+
+                    <div class="col-md-7">
+                        <!--max of duration is 1000 hours-->
+                        <input type="number" name="duration" class="form-control"
+                               ng-change="onDurationChange()" max="1000"
+                               id="inputDuration" ng-model="course.Duration" required
+                               autocomplete="off" placeholder="Hours" />
+                        <span class="validate-message" 
+                              ng-show="courseForm.$submitted || courseForm.duration.$dirty">
+                            <span ng-show="courseForm.duration.$error.required">
+                                Duration is required
+                            </span>
+                            <span ng-show="courseForm.duration.$error.number">
+                                Not valid number
+                            </span>
+                            <span ng-show="!checkMinDuration(course.Duration)
+                                  && !courseForm.duration.$error.max
+                                  && !courseForm.duration.$error.number
+                                  && !courseForm.duration.$error.required">
+                                Duration must be greater than 0
+                            </span>
+                            <span ng-show="courseForm.duration.$error.max">
+                                Duration is too great
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group required">
+                    <label for="selectTrainingMethod" class="col-md-4 form-control-label">Training Method</label>
+
+                    <div class="col-md-7">
+                        <select name="trainingMethod" class="form-control" id="selectTrainingMethod"
+                                ng-options="trainingMethod.Id as trainingMethod.Name for trainingMethod in trainingMethods"
+                                ng-model="course.TrainingMethod" required>
+                            <option value="" hidden></option>
+                        </select>
+
+                        <span class="validate-message" ng-show="courseForm.$submitted
+                                                            || courseForm.trainingMethod.$touched">
+                            <span ng-show="courseForm.trainingMethod.$error.required">
+                                Training method is required
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group required">
+                    <label for="selectAssessmentMethod" class="col-md-4 form-control-label">Assessment Method</label>
+
+                    <div class="col-md-7">
+                        <select name="assessmentMethod" class="form-control" id="selectAssessmentMethod"
+                                ng-options="assessmentMethod.Id as assessmentMethod.Name for assessmentMethod in assessmentMethods"
+                                ng-model="course.AssessmentMethod" required>
+                            <option value="" hidden></option>
+                        </select>
+
+                        <span class="validate-message" ng-show="courseForm.$submitted
+                                                            || courseForm.assessmentMethod.$touched">
+                            <span ng-show="courseForm.assessmentMethod.$error.required">
+                                Assessment method is required
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="checkbox-general-course">
+                    <div class="col-md-5 form-group">
+                        <label for="checkboxCertificateAvailable" class="col-md-9 form-control-label">
+                            Certificate Available
+                        </label>
+
+                        <div class="checkbox checkbox-primary col-md-1">
+                            <input type="checkbox" id="checkboxCertificateAvailable"
+                                   ng-model="course.IsCertificateAvailable">
+                            <label for="checkboxCertificateAvailable"></label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 form-group visible">
+                        <label for="checkboxVisible" class="col-md-8 form-control-label">Visible</label>
+
+                        <div class="checkbox checkbox-primary col-md-1">
+                            <input type="checkbox" id="checkboxVisible" ng-model="course.IsVisible">
+                            <label for="checkboxVisible"></label>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="col-md-4 form-group guest-allowed">
+                        <label for="checkboxGuestAllowed" class="col-md-9 form-control-label">
+                            Guest Allowed
+                        </label>
+
+                        <div class="checkbox checkbox-primary col-md-1">
+                            <input type="checkbox" id="checkboxGuestAllowed"
+                                   ng-model="course.IsGuestAllowed">
+                            <label for="checkboxGuestAllowed"></label>
+                        </div>
+                    </div>
+                    -->
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-12">
+                <div class="col-md-2">
+                    <label for="textAngularSummary" class=" form-control-label">Course Content</label>
+                </div>
+                <div class="icon-edit" ng-show="!isShowSummary">
+                    <a ng-click="isShowSummary = !isShowSummary"
+                       title="Edit summary">
+                        <i class="fa fa-pencil fa-lg"></i>
+                    </a>
+                </div>
+                <div class="col-md-9">
+                    <div text-angular id="textAngularSummary" ng-model="course.Summary"
+                         ng-show="isShowSummary" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-12">
+                <div class="col-md-2">
+                    <label for="textAngularObjectives" class="form-control-label">Objectives</label>
+                </div>
+                <div class="icon-edit" ng-show="!isShowObjectives">
+                    <a ng-click="isShowObjectives = !isShowObjectives"
+                       title="Edit objectives">
+                        <i class="fa fa-pencil fa-lg"></i>
+                    </a>
+                </div>
+                <div class="col-md-9">
+                    <div text-angular id="textAngularObjectives" ng-model="course.Objectives"
+                         ng-show="isShowObjectives" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-12">
+                <div class=" col-md-2">
+                    <label for="textAngularPre-requisite" class="form-control-label">
+                        Pre-requisites
+                    </label>
+                </div>
+                <div class="icon-edit" ng-show="!isShowPrerequisites">
+                    <a ng-click="isShowPrerequisites = !isShowPrerequisites"
+                       title="Edit pre-requisites">
+                        <i class="fa fa-pencil fa-lg"></i>
+                    </a>
+                </div>
+                <div class="col-md-9">
+                    <div text-angular id="textAngularPre-requisite" ng-model="course.Prerequisites"
+                         ng-show="isShowPrerequisites" />
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="form-group btn-group-edit-course">
+        <input type="button" class="btn btn-primary-gray" ng-click="cancel()" value="Cancel">
+        <input type="submit" form="courseForm" ng-disabled="isSendingRequest"
+               class="btn btn-primary-blue" ng-click="save(courseForm)" value="Save" />
+    </div>
+</div>

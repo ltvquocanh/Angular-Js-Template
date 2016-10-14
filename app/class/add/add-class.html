@@ -1,0 +1,183 @@
+﻿﻿﻿<div class="add-new-class">
+    <form novalidate name="newClassForm" id="newClassForm">
+        <p class="content-secondary-header">Add New Class</p>
+        <div class="general-form">
+            <div class="form-group">
+                <label class="content-secondary-header">General</label><br />
+                <svg height="10" width="400" class="line-under-general-and-trainer">
+                    <line x1="0" y1="0" x2="183" y2="0" class="line" />
+                </svg>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group required">
+                        <label class="col-md-4 field-name-add-class">Name</label>
+                        <div class="col-md-8 class-info">
+                            <input type="text" class="form-control class-info-type" maxlength="100"
+                                   name="className" ng-model="class.Name" required>
+                            <span class="validate-message" ng-show="newClassForm.$submitted || newClassForm.className.$dirty">
+                                <span ng-show="newClassForm.className.$error.required">
+                                    <span validation-errors name="Name" type="required" />
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group required">
+                        <label class="col-md-4 field-name-add-class">Registration Deadline</label>
+                        <div class="col-md-8 class-info">
+                            <div class="dropdown">
+                                <div class="input-group class-info-type">
+                                    <input type="text" class="form-control register-deadline-info"
+                                           datetime-picker="MMM dd, yyyy - HH:mm" name="registerdeadline"
+                                           ng-model="class.RegistrationDueTime" is-open="isOpen" required />
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default calendar-info btn-primary-icon"
+                                                ng-click="openCalendar($event, 'date3')">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                                <span class="validate-message"
+                                      ng-show="newClassForm.$submitted || newClassForm.registerdeadline.$dirty">
+                                    <span ng-show="newClassForm.registerdeadline.$error.required">
+                                        Registration Deadline is required
+                                    </span>
+                                    <span ng-show="newClassForm.registerdeadline.$error.datetime">
+                                        Time format is Jan 08, 2016 - 12:00
+                                    </span>
+                                    <span ng-if="class.RegistrationDueTime < getcurrentDate()">
+                                        Registration Deadline should not be in the past
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group required">
+                        <label class="col-md-4 field-name-add-class">Available Seats</label>
+                        <div class="col-md-8 class-info">
+                            <div class="input-group number-spinner class-info-type">
+                                <input type="number" class="form-control" name="capacity" ng-model="class.Capacity"
+                                       ng-change="onCapacityChange()" max="10000" required>
+                            </div>
+                            <span class="validate-message" ng-show="newClassForm.$submitted || newClassForm.capacity.$dirty">
+                                <span ng-show="newClassForm.capacity.$error.required">
+                                    Available Seats is required
+                                </span>
+                                <span ng-show="isCapacityErrorMin">
+                                    Available Seats must be greater than 0
+                                </span>
+                                <span ng-show="newClassForm.capacity.$error.number">
+                                    Available Seats is invalid
+                                </span>
+                                <span ng-show="newClassForm.capacity.$error.max">
+                                    Available Seats is too great
+                                </span>
+                                <span ng-show="isCapacityDecimal && !isCapacityErrorMin">
+                                    Available Seats is not decimal number
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-4 field-name-add-class">Extend For</label>
+                        <div class="col-md-8 class-info">
+                            <select name="extendForClass" class="form-control class-info-type" id="selectClass"
+                                    ng-options="classOfCourse.Id as classOfCourse.Name for classOfCourse in allClassOfCourse"
+                                    ng-model="class.ExtendForClassId">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group required">
+                    <div class="col-md-6">
+                        <label class="col-md-4 name-methodology-introduction">Methodology</label>
+                        <div class="col-md-8 text-area-add-class">
+                            <textarea type="text" class="form-control class-info-type-methodology" name="methodology"
+                                      ng-model="class.Methodology" rows="3" maxlength="250" required></textarea>
+                            <span class="validate-message" ng-show="newClassForm.$submitted || newClassForm.methodology.$dirty">
+                                <span ng-show="newClassForm.methodology.$error.required">
+                                    Methodology is required
+                                </span>
+                                <span ng-show="newClassForm.methodology.$error.maxlength">
+                                    Max length of Methodology is 250 character
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="content-secondary-header">Trainer</label><br />
+                <svg height="10" width="400" class="line-under-general-and-trainer">
+                    <line x1="0" y1="0" x2="183" y2="0" class="line" />
+                </svg>
+            </div>
+            <div class="well" ng-repeat="classTrainer in classTrainers track by $index">
+                <div class="row">
+                    <div class="col-md-6 form-group required">
+                        <label class="col-md-4">Trainer</label>
+                        <div class="col-md-8">
+                            <input id="classTrainer{{$index}}" class="form-control trainer-info-type"
+                                   ng-model="classTrainers[$index]" name="trainerName{{$index}}" required
+                                   ng-blur="onBlur($index, newClassForm['trainerName'+$index])"
+                                   typeahead="user as user.FullName for user in allUsers | filter:$viewValue | limitTo:8"
+                                   typeahead-editable="false" spellcheck="false"
+                                   typeahead-select-on-blur="true"
+                                   typeahead-select-on-exact="true"
+                                   typeahead-on-select="onSelect($item, $index,newClassForm['trainerName'+$index])"
+                                   typeahead-template-url='tpl.html' autocomplete="off">
+                            <span class="validate-message" ng-show="newClassForm.$submitted || newClassForm['trainerName'+$index].$dirty">
+                                <span ng-show="newClassForm['trainerName'+$index].$error.required" class="margin-left-15px">
+                                    Trainer is missing or invalid
+                                </span>
+                                <span ng-show="newClassForm['trainerName'+$index].$error.duplicate
+                                                && classTrainers[$index] != null" class="margin-left-15px">
+                                    Trainer is duplicated
+                                </span>
+                            </span>
+
+                        </div>
+                    </div>
+                    <div class="col-md-6 form-group required">
+                        <label class="col-md-4 name-methodology-introduction">Trainer Introduction</label>
+                        <div class="col-md-8">
+                            <textarea type="text" ng-model="classTrainer.Introduction" name="introduction{{$index}}"
+                                      class="form-control introduce-info-type" rows="3" maxlength="500" required></textarea>
+                            <span class="validate-message" ng-show="newClassForm.$submitted || newClassForm['introduction'+$index].$dirty">
+                                <span ng-show="newClassForm['introduction'+$index].$error.required" class="margin-left-15px">
+                                    Trainer introduction is required
+                                </span>
+                                <span ng-show="newClassForm['introduction'+$index].$error.maxlength">
+                                    Max length of Trainer introduction is 500 character
+                                </span>
+                            </span>
+                            <i class="glyphicon glyphicon-remove remove-trainer" style="cursor:pointer"
+                               ng-click="removeClassTrainer($index, newClassForm)" ng-if="classTrainers.length > 1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <!--8 is max of trainers can be added on a class-->
+                <a href="" ng-if="classTrainers.length < 8" ng-click="addClassTrainer()" class="btn-icon-only icon add-trainer-color">
+                    <i class="fa fa-plus-circle"></i>
+                    Add Trainer
+                </a>
+            </div>
+        </div>
+        <div class="float-right-button">
+            <input type="button" class="btn btn-primary-gray"
+                   ng-click="cancel()" value="Cancel">
+            <input type="submit" class="btn btn-primary-blue"
+                   ng-disabled="isSendingRequest" ng-click="save(newClassForm)" value="Save">
+        </div>
+    </form>
+</div>
+
+<script type="text/ng-template" id="tpl.html">
+    <a class="btn dropdown-autocomplete" data-toggle="dropdown">
+        {{match.model.FullName + " ( " + match.model.Username + " ) " }}
+    </a>
+</script>

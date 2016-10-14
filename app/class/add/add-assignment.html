@@ -1,0 +1,119 @@
+﻿<div class="add-assignment">
+    <p class="content-secondary-header">Add Assignment</p>
+    <div class="row">
+        <div>
+            <form class="form-horizontal" novalidate name="addAssignmentForm" id="addAssignmentForm">
+                <div class="row general-form">
+                    <div class="form-group required">
+                        <label class="col-md-2">Title</label>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" name="title" maxlength="100"
+                                   ng-model="newAssignment.Name" required />
+                            <span class="validate-message" ng-if="addAssignmentForm.$submitted || addAssignmentForm.title.$dirty">
+                                <span ng-if="addAssignmentForm.title.$error.required">
+                                    Title is required
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-group required">
+                        <label class="col-md-2">Available From</label>
+                        <div class="col-md-4">
+                            <div class="dropdown">
+                                <div class="input-group">
+                                    <input type="text" class="form-control"
+                                           name="startDate" id="inputStarDate" autocomplete="off"
+                                           datetime-picker="MMM dd, yyyy - HH:mm"
+                                           ng-model="newAssignment.StartTime" is-open="isOpenStartDate" required />
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default"
+                                                ng-click="openStartDateCalendar($event, 'newAssignment.StartTime')">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="validate-message" ng-show="addAssignmentForm.$submitted || addAssignmentForm.startDate.$dirty">
+                                <span ng-show="addAssignmentForm.startDate.$error.required">
+                                    Start time is required
+                                </span>
+                                <span ng-show="addAssignmentForm.startDate.$error.datetime">
+                                    Time format is Jan 08, 2016 - 12:00
+                                </span>
+                                <span ng-show="isPastDate(newAssignment.StartTime)">
+                                    Start time should not be in the past
+                                </span>
+                            </span>
+                        </div>
+                        <label class="col-md-1 align-text-center">Until</label>
+                        <div class="col-md-4">
+                            <div class="dropdown">
+                                <div class="input-group">
+                                    <input type="text" class="form-control"
+                                           name="endDate" id="inputEndDate" autocomplete="off"
+                                           datetime-picker="MMM dd, yyyy - HH:mm"
+                                           ng-model="newAssignment.EndTime" is-open="isOpenEndDate" required />
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default"
+                                                ng-click="openEndDateCalendar($event, 'newAssignment.EndTime')">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                                <span class="validate-message" ng-show="addAssignmentForm.$submitted || addAssignmentForm.endDate.$dirty">
+                                    <span ng-show="addAssignmentForm.endDate.$error.required">
+                                        End time is required
+                                    </span>
+                                    <span ng-show="addAssignmentForm.endDate.$error.datetime">
+                                        Time format is Jan 08, 2016 - 12:00
+                                    </span>
+                                    <span ng-show="!isStartTimeLessThanEndTime(newAssignment.EndTime, newAssignment.StartTime)">
+                                        End time must be greater than start time
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-2 description">Description</label>
+                        <div class="col-md-9">
+                            <textarea ng-model="newAssignment.Description" class="form-control resize-description"
+                                      rows="10"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-2">Attach File</label>
+                        <div class="col-sm-5">
+                            <input class="form-control" type="text" name="uploadFile" autocomplete="off"
+                                   ng-model="uploadedFile.name" readonly>
+                            <span class="validate-message" ng-if="addAssignmentForm.uploadedFile.$invalid">
+                                <span ng-if="addAssignmentForm.uploadedFile.$error.maxSize">
+                                    File must be less than 5MB
+                                </span>
+                            </span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span class="btn btn-primary-blue btn-file">
+                                Browse
+                                <input type="file" ngf-select ng-model="uploadedFile" ngf-max-size="5MB"
+                                       style="cursor:pointer;"
+                                       name="uploadedFile" accept="file_extension|audio/*|video/*|image/*|media_type">
+                            </span>
+                        </div>
+                    </div>
+                </div><br />
+                <div class="row">
+                    <div class="float-right">
+                        <input type="button" class="btn btn-primary-gray"
+                               ng-click="cancel()" value="Cancel">
+                        <input type="submit" class="btn btn-primary-blue" ng-disabled="isSendingRequest"
+                               ng-click="save(addAssignmentForm, uploadedFile)" value="Save">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

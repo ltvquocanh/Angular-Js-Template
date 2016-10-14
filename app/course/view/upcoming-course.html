@@ -1,0 +1,119 @@
+﻿
+<div class="upcoming-course col-md-12 row">
+    <div class="header-upcoming">
+        <div class="col-md-10">
+            <h4>Upcoming Classes <small>{{getMonthUpcoming()| amDateFormat:'MMM.  YYYY'}}</small></h4>
+        </div>
+
+        <div class="btn-group col-md-2" ng-if="hasChangeStatusPermission()" ng-show="isDisplay">
+            <button type="button" class="btn locked_active" id="statusOff" ng-click="changeVisibilityStatus(isVisible = !isVisible)">OFF</button>
+            <button type="button" class="btn unlocked_inactive" id="statusOn" ng-click="changeVisibilityStatus(isVisible = !isVisible)">ON</button>
+        </div>
+    </div>
+    <div class="body-upcoming" ng-show="isDisplay">
+        <div class="col-md-12 coming-soon" ng-if="upComingDomains.length == 0 || (!isVisible && !hasChangeStatusPermission())">
+            Coming soon.
+        </div>
+        <div class="domain-upcoming col-md-12 pull-left" ng-init=""
+             ng-if="isVisible || (!isVisible && hasChangeStatusPermission())"
+             ng-repeat="domain in upcomingDomains track by $index">
+            <h3 class="col-md-12 domain-upcoming-name">{{domain.Name}} Courses</h3>
+            <div class="wrap-course-upcoming-list col-md-12 image-grid">
+                <div id="courseId{{course.Id}}" ng-click="showDetail(course, domain.UpcomingCoursesDto, $index)" ng-class="{'borderBottom': course.isShow}"
+                     ng-init="numberOfCourse = domain.UpcomingCoursesDto.length" class="col-md-12 course-upcoming"
+                     ng-repeat="course in domain.UpcomingCoursesDto track by $index">
+                    <div class="img-wrapper">
+                        <img ng-if="course.Image != null" ng-src="Uploads/CourseImages/{{course.Image}}" />
+                        <img ng-if="course.Image == null" ng-src="Uploads/CourseImages/icon-noImage.png" />
+                    </div>
+                    <div class="banner"></div>
+                    <div class="title-area">
+                        <a ui-sref="viewcourse({id: course.Id})">
+                            <p class="title" ng-bind-html="course.Name"></p>
+                        </a>
+                    </div>
+                    <div class="date">
+                        <i class="fa fa-clock-o fa-lg clock"></i> {{course.Classes[0].StartTime | amDateFormat:'MMM  DD, YYYY'}}
+                    </div>
+
+                    <div id="detail-html-course-id-{{course.Id}}" ng-hide="true" class="col-md-12">
+                        <div class="arrow-up"></div>
+                        <div class="detailHtmlCourse col-md-12">
+                            <label class="col-md-2">Objectives: </label>
+                            <p class="col-md-10" ng-bind-html="course.Objectives"></p>
+                            <div class="clearfix"></div>
+                            <label class="col-md-2">Contents: </label>
+                            <p class="col-md-10" ng-bind-html="course.Summary"></p>
+                            <div class="clearfix"></div>
+                            <label class="col-md-2">Prerequisite:</label>
+                            <p class="col-md-10" ng-bind-html="course.Prerequisites"></p>
+                            <div class="clearfix"></div>
+                            <label class="col-md-2">Methodology: </label>
+                            <p class="col-md-10" ng-bind-html="course.Classes[0].Methodology"></p>
+                            <div class="clearfix"></div>
+
+                            <label class="col-md-2">Trainer: </label>
+                            <div class="col-md-10 infor-trainer">
+                                <div id="slides_control" class="row-trainer col-md-12">
+                                    <div class="row col-md-12">
+                                        <carousel>
+                                            <slide ng-repeat="trainer in course.Classes[0].ClassTrainers" active="slide.active">
+                                                <div class="detail-info-trainer col-md-12">
+                                                    <div class="left-info-trainer">
+                                                        <img class="trainer-image" ng-if="trainer.Avatar != null && trainer.Avatar != ''"
+                                                             ng-src="{{trainer.Avatar}}" />
+                                                        <img class="trainer-image" ng-if="!trainer.Avatar ||trainer.Avatar == null || trainer.Avatar == ''"
+                                                             ng-src="Uploads/CourseImages/DefaultTrainerAvatar.jpg" />
+
+                                                        <div class="trainer-index">{{$index+1}}/{{course.Classes[0].ClassTrainers.length}} Trainer(s)</div>
+                                                        <div class="trainer-name text-uppercase">{{getNameFirstLast(trainer.FullName)}} - {{trainer.Position}}</div>
+                                                    </div>
+                                                    <div class="right-info-trainer">
+                                                        <p class="trainer-intro" ng-bind-html="trainer.Introduction"></p>
+                                                    </div>
+
+                                                </div>
+                                            </slide>
+                                        </carousel>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+
+                            <label class="col-md-2">Time & Venue: </label>
+                            <div class="col-md-10">
+                                <table class="time-venue-course table table-striped col-md-10">
+                                    <thead>
+                                        <tr class="table-header-row ">
+                                            <td width="20px">#Session</td>
+                                            <td width="120px" class=" ">Date<i></i></td>
+                                            <td width="120px" class=" ">Time<i></i></td>
+                                            <td class="">Location<i></i></td>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr ng-repeat="session in course.ClassessSessions">
+                                            <td colspan="4" class="className" ng-if="session.className">{{session.className}}</td>
+                                            <td width="20px" ng-if="!session.className">{{session.SessionNumber}}</td>
+                                            <td width="120px" ng-if="!session.className">
+                                                <span class="start-date">{{session.StartTime | amDateFormat:'MMM  DD, YYYY'}}</span>
+                                            </td>
+                                            <td width="120px" ng-if="!session.className">
+                                                <span class="start-date">{{session.StartTime | amDateFormat:'HH:mm'}} - </span>
+                                                <span class="end-date">{{session.EndTime | amDateFormat:'HH:mm'}}</span>
+                                            </td>
+                                            <td ng-if="!session.className" class="">{{session.Room}}</td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </div>
+                </div>
+            </div><!--end repeat  course-upcoming -->
+        </div>
+    </div>
+</div>

@@ -1,0 +1,105 @@
+﻿<div class="my-teaching-class">
+    <div class="row my-class-controls">
+        <div class="col-md-8 content-primary-header">
+            My Teaching Classes
+        </div>
+
+        <div class="search-box col-md-3">
+            <span class="glyphicon glyphicon-search search-input">
+                <input autofocus
+                       id="search"
+                       type="text"
+                       placeholder="Search course"
+                       ng-model="myClass.CourseName"
+                       ng-model-options='{ debounce: 750 }'
+                       ng-change="getMyClasses(myClass.CourseName)">
+            </span>
+        </div>
+
+
+        <div class="col-md-1">
+            <a class="btn btn-secondary btn-sort-my-class" ng-click="reverse = !reverse">
+                <span ng-if="!reverse">
+                    Sort by oldest
+                    <i class="fa fa-sort-amount-asc icon"></i>
+                </span>
+                <span ng-if="reverse">
+                    Sort by newest
+                    <i class="fa fa-sort-amount-desc icon"></i>
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <div ng-if="myClasses.length == 0" class="notification-no-data">No data</div>
+
+    <div ng-repeat="myClass in myClasses |orderBy: 'StartDate': reverse">
+        <div class="item-my-class" ng-init="getColorByClassStatus(myClass)">
+
+            <div class="col-md-1">
+                <div class="image-margin-top">
+                    <img ng-if="myClass.ImageName != null" ng-src="Uploads/CourseImages/{{myClass.ImageName}}" />
+                    <img ng-if="myClass.ImageName == null" ng-src="Uploads/CourseImages/icon-noImage.png" />
+                </div>
+            </div>
+
+            <div class="col-md-11 infor-my-class">
+                <div class="col-md-8" style="top:5px">
+                    <div class=" content-secondary-header">
+                        <a ui-sref="viewcourse({id: myClass.CourseId})">
+                            {{myClass.CourseName}}
+                        </a>
+
+                    </div>
+
+                    <div class="infor-domain-name">
+                        {{myClass.DomainName}}
+                    </div>
+                    <div class="infor-note-class">
+                        <a class="cursor-view-activites" ui-sref="class.activity({id:myClass.Id})"> View activities</a>
+                      
+                    </div>
+                    <div class="color-next-session" ng-if="myClass.Status != 3 && getNextSession(myClass) != null">
+                        <span> </span>Next session on <span class="color-next-session">
+                            {{getNextSession(myClass).StartTime |amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                        </span>
+                        <span>
+                            at <span class="color-next-session">{{getNextSession(myClass).Room}}</span>
+                        </span>
+                    </div>
+                    
+                </div>
+                <div class="col-md-1 pull-right label-status" ng-class="getColorByClassStatus(myClass)[1]">
+                    <span>{{getColorByClassStatus(myClass)[0]}}</span>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="date-time-class">
+                        {{myClass.StartTime | amDateFormat:'MMM DD, YYYY'}} - {{myClass.EndTime | amDateFormat:'MMM DD, YYYY'}}
+                    </div>
+                    <div class="infor-trainer">
+                        <div id="slides_control" class="row-trainer">
+
+                            <carousel>
+                                <slide ng-repeat="trainer in myClass.ClassTrainers" active="slide.active">
+                                    <img class="trainer-image" ng-if="trainer.Avatar != null && trainer.Avatar != ''"
+                                         ng-src="{{trainer.Avatar}}" />
+                                    <img class="trainer-image" ng-if="trainer.Avatar == null || trainer.Avatar == ''"
+                                         ng-src="Uploads/CourseImages/DefaultTrainerAvatar.jpg" />
+                                    <div class="trainer-name text-uppercase">{{trainer.FullName}}</div>
+                                    <div class="trainer-name">{{$index+1}}/{{myClass.ClassTrainers.length}} trainers</div>
+                                </slide>
+                            </carousel>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+</div>

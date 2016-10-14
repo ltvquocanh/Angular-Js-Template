@@ -1,0 +1,168 @@
+﻿<div class="row col-md-12">
+    <div ng-if="errorMessage" class="alert alert-danger warning-class" ng-class="{fade:!errorMessage}" ng-click="errorMessage=null">
+        <strong>Warning! {{errorMessage}} </strong>
+    </div>
+</div>
+
+<div class="survey-question col-md-12">
+    <div class="header-survey form-group">
+        <p class="title-header" ng-bind-html="survey.Title"></p>
+        <a ng-click="preview(survey.Id)" class="btn btn-secondary active-link pull-right"><i class="fa fa-eye fa-lg"></i> Preview</a>
+    </div>
+     <p ng-bind-html="survey.Description"></p>
+    <div class="clear-fix"></div>
+    <div class="form-group"></div>
+        <!--Start Repeat page-->
+    <div ng-show="survey.Pages.length == 0 && canEditSurvey" class="form-group">
+        <button ng-disabled="isSendingRequest" class="btn btn-secondary add-page" ng-click="addPage(0, 0)"><i class="fa fa-scissors"></i> Add Page</button>
+    </div>
+    
+    <div class="survey-page col-md-12" ng-init="currentPage= $index +1" ng-repeat="page in survey.Pages track by $index">
+        <div class="form-group">
+            <div class="survey-page-count">
+                Page {{currentPage}} of {{survey.Pages.length}}
+                <div class="triangle"></div>
+            </div>
+            <div ng-show="canEditSurvey" class="pull-right">
+                <button ng-disabled="isSendingRequest" class="btn btn-icon-only  " title="Delete" ng-click="deletePage(page.Id, page.PageNumber)">
+                    <i class="fa fa-times icon fa-lg "></i>
+                </button>
+            </div>
+        </div>
+        <!-- Start render question-->
+        <div class="form-group"></div>
+        <ul data-as-sortable="dragControlListeners" is-disabled="isDisableMove()" data-ng-model="page.Questions" class="general-form question-list col-md-12">
+            <div ng-init="page.isShow= false" ng-if="page.Questions.length == 0">
+                <div ng-hide="page.isShow || !canEditSurvey" class="form-group">
+                    <button ng-disabled="isSendingRequest" class="btn btn-secondary" ng-click="newQuestion={}; showCreateForm(newQuestion, null, page);"><i class="fa fa-plus-circle"></i> Add Question</button>
+                    <button ng-disabled="isSendingRequest" class="btn btn-secondary add-page" ng-click="addPage(currentPage, 0)"><i class="fa fa-scissors"></i> Add Page</button>
+                </div>
+                <div ng-if="page.isShow" ng-include src="'Frontend/app/class/survey/edit/template/survey-create-question.html'"> </div>
+            </div>
+            <li class="question-li" ng-mouseenter="question.hover = true" ng-mouseleave="question.hover = false" ng-repeat="question in page.Questions" data-as-sortable-item>
+                <div data-as-sortable-item-handle ng-class="{ 'prevent-move' : isDisableMove()}">
+                    <!--Start Content Question Hover-->
+                    <div class="content-question">
+                        <div ng-mouseenter="omMouseEnterHeaderQuestion()" ng-mouseleave="onMouseLeaveHeaderQuestion()">
+                            <div class="form-group header-question">
+                                <p class="question-code col-md-9">Q{{getQuestionCode($index+1,currentPage-1)}} <span class="question-required" ng-show="question.IsRequired">*</span> </p>
+                                <div ng-show="!question.showFormCreateQuestion">
+                                    <div ng-show="question.hover && canEditSurvey " class="question-toolbar col-md-3">
+
+                                        <button ng-disabled="isSendingRequest" ng-hide="question.IsOverall" class="btn btn-icon-only  pull-right" title="Delete" ng-click="deleteQuestion(question.Id, $index+1, page.Questions)">
+                                            <i class="fa fa-times icon "></i>
+                                        </button>
+                                        <button ng-disabled="isSendingRequest" ng-hide="question.IsOverall" class="btn btn-icon-only  pull-right" title="Copy" ng-click="newQuestion = copy(question); showCopyForm(question, newQuestion)">
+                                            <i class="fa fa-files-o icon "></i>
+                                        </button>
+                                        <button ng-disabled="isSendingRequest" class="btn btn-icon-only  pull-right" title="Edit" ng-click="newQuestion = copy(question); showEditForm(question, newQuestion)">
+                                            <i class="fa fa-pencil icon "></i>
+                                        </button>
+                                        <button ng-disabled="isSendingRequest" ng-hide="currentPage == 1 && $index+1 == 1 " class="btn btn-icon-only  pull-right" title="Up" ng-click="moveQuestion(page, $index, true )">
+                                            <i class="fa fa-arrow-up icon "></i>
+                                        </button>
+                                        <button ng-disabled="isSendingRequest" ng-hide="currentPage == survey.Pages.length && $index+1 == page.Questions.length" class="btn btn-icon-only  pull-right" title="Down" ng-click="moveQuestion(page, $index, false)">
+                                            <i class="fa fa-arrow-down icon "></i>
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <strong class="col-md-12 question-title"> {{question.Title}}</strong>
+                        </div>
+
+                        <br />
+                        <div class="clear-fix"></div>
+                        <div class="option-question">
+                            <div ng-if="question.Type == 1">
+                                <div ng-repeat="option in question.Options">
+                                    <div class="radio radio-primary">
+                                        <input type="radio" name="questionId{{question.Id}}" id="radio-option-{{question.Id}}{{$index}}" />
+                                        <label class="" for="radio-option-{{question.Id}}{{$index}}">  {{option.Title}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="question-content-dropdown" ng-if="question.Type == 2">
+                                <select class="form-control"
+                                        ng-options="option.Id as option.Title for option in question.Options" ng-model="option.Title"></select>
+                            </div>
+                            <div ng-if="question.Type == 3">
+                                <div ng-repeat="option in question.Options track by $index">
+                                    <div class="checkbox checkbox-primary">
+                                        <input type="checkbox" id="option-check-box{{question.Id}}{{$index}}" />
+                                        <label class="" for="option-check-box{{question.Id}}{{$index}}">  {{option.Title}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <textarea class="text-area-question form-control" placeholder="Give your comment (Limited 1000 characters)" ng-if="question.Type == 4"></textarea>
+                            <div ng-if="question.Type == 5">
+                                <div class="comment-section">
+                                    <!-- Comment Score-->
+                                    <div class="comment-box">
+                                        <form name="commentForm" class="general-form" novalidate>
+                                            <div class="form-horizontal">
+                                                <div class="form-group">
+                                                    <div class="give-score col-md-12 btn-group" ng-if="question.IsRequired">
+                                                        <label name="scoreName" required class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="1">1</label>
+                                                        <label name="scoreName" required class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="2">2</label>
+                                                        <label name="scoreName" required class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="3">3</label>
+                                                        <label name="scoreName" required class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="4">4</label>
+                                                        <label name="scoreName" required class="score-list btn btn-average-score" ng-model="question.score" uib-btn-radio="5">5</label>
+                                                        <label name="scoreName" required class="score-list btn btn-average-score" ng-model="question.score" uib-btn-radio="6">6</label>
+                                                        <label name="scoreName" required class="score-list btn btn-average-score" ng-model="question.score" uib-btn-radio="7">7</label>
+                                                        <label name="scoreName" required class="score-list btn btn-high-score" ng-model="question.score" uib-btn-radio="8">8</label>
+                                                        <label name="scoreName" required class="score-list btn btn-high-score" ng-model="question.score" uib-btn-radio="9">9</label>
+                                                        <label name="scoreName" required class="score-list btn btn-high-score" ng-model="question.score" uib-btn-radio="10">10</label>
+                                                    </div>
+                                                    <div class="give-score col-md-12 btn-group" ng-if="!question.IsRequired">
+                                                        <label name="scoreName" class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="1">1</label>
+                                                        <label name="scoreName" class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="2">2</label>
+                                                        <label name="scoreName" class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="3">3</label>
+                                                        <label name="scoreName" class="score-list btn btn-low-score" ng-model="question.score" uib-btn-radio="4">4</label>
+                                                        <label name="scoreName" class="score-list btn btn-average-score" ng-model="question.score" uib-btn-radio="5">5</label>
+                                                        <label name="scoreName" class="score-list btn btn-average-score" ng-model="question.score" uib-btn-radio="6">6</label>
+                                                        <label name="scoreName" class="score-list btn btn-average-score" ng-model="question.score" uib-btn-radio="7">7</label>
+                                                        <label name="scoreName" class="score-list btn btn-high-score" ng-model="question.score" uib-btn-radio="8">8</label>
+                                                        <label name="scoreName" class="score-list btn btn-high-score" ng-model="question.score" uib-btn-radio="9">9</label>
+                                                        <label name="scoreName" class="score-list btn btn-high-score" ng-model="question.score" uib-btn-radio="10">10</label>
+                                                        <a class="btn btn-icon-only reset-score" title="Reset score" ng-click="question.score = null">
+                                                            <i class="fa fa-refresh icon reset-score"></i>
+                                                        </a>
+                                                    </div>
+                                                    <span ng-show="question.IsRequired && isClicked && !question.score"
+                                                          class="validate-message">Score is required</span>
+                                                    <div ng-if="question.score && question.score <= question.CommentScoreLevel && !question.comment">
+                                                        <textarea rows="6" cols="50" name="commnentName" required class="text-area-question col-md- 12 form-control" ng-model="question.comment" id="ScoreComment" placeholder="Give your comment (Limited 1000 characters)"
+                                                                  maxlength="1000"></textarea>
+                                                    </div>
+                                                    <div ng-if="!(question.score && question.score <= question.CommentScoreLevel && !question.comment)">
+                                                        <textarea rows="6" cols="50" name="commnentName" class="text-area-question col-md- 12 form-control" ng-model="question.comment" id="ScoreComment" placeholder="Give your comment (Limited 1000 characters)"
+                                                                  maxlength="1000"></textarea>
+                                                    </div>
+                                                    <span ng-show="question.score && question.score <= question.CommentScoreLevel && !question.comment"
+                                                          class="validate-message">
+                                                        Comment is required if you give score less than or equal {{question.CommentScoreLevel}}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div> <!-- End Comment Score-->
+                            </div>
+                        </div>
+                        <div class="hold-bar">
+                            <div ng-show="question.hover && !question.showFormCreateQuestion && canEditSurvey" class="toolbar">
+                                <button ng-disabled="isSendingRequest" class="btn btn-secondary" ng-click="question.hover = false;newQuestion={};showCreateForm(newQuestion, question, page)"><i class="fa fa-plus-circle"></i> Add Question</button>
+                                <button ng-disabled="isSendingRequest" class="btn btn-secondary add-page" ng-click="addPage(currentPage, $index+1)"><i class="fa fa-scissors"></i> Add Page</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Content question-->
+                    <div ng-if="question.showFormCreateQuestion" ng-include src="'Frontend/app/class/survey/edit/template/survey-create-question.html'"> </div>
+
+                </div>
+
+            </li>   <!-- End render question-->
+        </ul>
+    </div><!-- End repeat Pages-->
+</div>

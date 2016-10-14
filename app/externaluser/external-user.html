@@ -1,0 +1,412 @@
+﻿<div class="clearfix"></div>
+<div class="content-primary-header pull-left">
+    External Trainers
+</div>
+<br />
+<br />
+<br />
+<div class="clearfix"></div>
+<div class="external-trainer">
+    <div class="row">
+        <div class="content-table">
+            <div class="btn-toolbar-add-session btn-toolbar table-controls">
+                <div class="btn-group pull-right">
+                    <a class="btn btn-secondary" title="Add external trainer" ng-click="openModalAddExternalTrainer()"
+                       popover-trigger="mouseenter" popover-placement="top">
+                        <i class="fa fa-plus icon"></i>Add External Trainer
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive well">
+                <table class="table table-striped" datatable="ng" dt-options="dtOptions"
+                       dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback">
+                    <thead>
+                        <tr class="table-header-row">
+                            <td class="col-number">#</td>
+                            <td>Full Name<i></i></td>
+                            <td>Username<i></i></td>
+                            <td>BadgeID<i></i></td>
+                            <td>Position<i></i></td>
+                            <td>Create<span style="color:#E5EEF5">_</span>By<i></i></td>
+                            <td>Status<i></i></td>
+                            <td class="col-action">Action</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="externalUser in externalUsers">
+                            <td class="col-number">{{$index + 1}}</td>
+                            <td class="word-break">{{externalUser.FullName}}</td>
+                            <td class="word-break">{{externalUser.Username}}</td>
+                            <td class="word-break">{{externalUser.BadgeID}}</td>
+                            <td class="word-break">{{externalUser.ExternalUser.Position}}</td>
+                            <td>{{externalUser.CreatedBy}}</td>
+                            <td>
+                                <span ng-show="externalUser.IsDeleted == true">
+                                    Disabled
+                                </span>
+                                <span ng-show="externalUser.IsDeleted == false">
+                                    Actived
+                                </span>
+                            </td>
+                            <td class="table-control-column" style="text-align: center;">
+                                <a class="btn btn-icon-only" title="Edit session" ng-click="openModalEditExternalTrainer(externalUser.Id)">
+                                    <i class="fa fa-pencil icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/ng-template" id="addExternalTrainerDialog.html">
+    <div class="external-trainer">
+        <div class="modal-header">
+            <h4>Add External Trainer </h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="addExternalTrainerForm" id="addExternalTrainerForm" novalidate>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputName">
+                            Full Name
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputName" placeholder="Full Name" ng-maxlength="100"
+                                   ng-model="newExternalTrainer.FullName" name="fullName" autocomplete="off" required/>
+                            <span class="validate-message" ng-show="addExternalTrainerForm.fullName.$dirty
+                                                      || addExternalTrainerForm.$submitted">
+                                <span ng-show="addExternalTrainerForm.fullName.$error.required">
+                                    Name is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="addExternalTrainerForm.fullName.$dirty">
+                                <span ng-show="addExternalTrainerForm.fullName.$error.maxlength">
+                                    Name should be less than 100 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputUsername">
+                            Username
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputUsername" placeholder="Username" ng-maxlength="50"
+                                   ng-change="checkExistUsername(newExternalTrainer.Username)"
+                                   ng-model="newExternalTrainer.Username" name="username" autocomplete="off" required/>
+                            <span class="validate-message" ng-show="addExternalTrainerForm.username.$dirty
+                                                      || addExternalTrainerForm.$submitted">
+                                <span ng-show="addExternalTrainerForm.username.$error.required">
+                                    Username is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="addExternalTrainerForm.username.$dirty">
+                                <span ng-show="addExternalTrainerForm.username.$error.maxlength">
+                                    Username should be less than 50 characters
+                                </span>
+                                <span ng-show="isExistUsername && !addExternalTrainerForm.username.$error.required">
+                                    Username already exists
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputPassword">
+                            Password
+                        </label>
+                        <div class="col-sm-9">
+                            <input type={{inputType}} class="form-control" id="inputPassword" placeholder="Password" ng-maxlength="50"
+                                   ng-model="newExternalTrainer.ExternalUser.Password" name="password" autocomplete="new-password" required />
+                            <span class="validate-message" ng-show="addExternalTrainerForm.password.$dirty
+                                                      || addExternalTrainerForm.$submitted">
+                                <span ng-show="addExternalTrainerForm.password.$error.required">
+                                    Password is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="addExternalTrainerForm.password.$dirty">
+                                <span ng-show="addExternalTrainerForm.password.$error.maxlength">
+                                    Password should be less than 50 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <label class="control-label col-sm-3 external-user-label"></label>
+                        <div class="col-sm-1">
+                            <input type="checkbox" id="checkbox" ng-click="hideShowPassword()"/>
+                        </div>
+                        <div class="col-sm-8">
+                            <label class="hide-show-checkbox" for="checkbox" ng-if="showPass">Show password</label>
+                            <label class="hide-show-checkbox" for="checkbox" ng-if="!showPass">Hide password</label>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputBadgeID">
+                            BadgeID
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputBadgeID" placeholder="BadgeID" ng-maxlength="20"
+                                   ng-change="checkExistBadgeID(newExternalTrainer.BadgeID)"
+                                   ng-model="newExternalTrainer.BadgeID" name="badgeID" autocomplete="off" required />
+                            <span class="validate-message" ng-show="addExternalTrainerForm.badgeID.$dirty
+                                                      || addExternalTrainerForm.$submitted">
+                                <span ng-show="addExternalTrainerForm.badgeID.$error.required">
+                                    BadgeID is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="addExternalTrainerForm.badgeID.$dirty">
+                                <span ng-show="addExternalTrainerForm.badgeID.$error.maxlength">
+                                    BadgeID should be less than 20 characters
+                                </span>
+                                <span ng-show="isExistBadgeID && !addExternalTrainerForm.badgeID.$error.required">
+                                    BadgeID already exists
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <label class="control-label col-sm-3 external-user-label" for="inputPosition">
+                            Position
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputPosition" placeholder="Position" ng-maxlength="50"
+                                   ng-model="newExternalTrainer.ExternalUser.Position" name="position" />
+                            <span class="validate-message" ng-show="addExternalTrainerForm.position.$dirty">
+                                <span ng-show="addExternalTrainerForm.position.$error.maxlength">
+                                    Position should be less than 50 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputUsername">
+                            Status
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <select class="form-control" name="status" id="status"
+                                    ng-options="status.Id as status.Name for status in statusArray"
+                                    ng-change="onStatusChange()"
+                                    ng-model="newExternalTrainer.IsDeleted" required>
+                                <option value="" hidden></option>
+                            </select>
+                            <span class="validate-message" ng-show="addExternalTrainerForm.$submitted
+                                                      || addExternalTrainerForm.status.$dirty">
+                                <span ng-show="!isStatusValid">
+                                    Status is required
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <label for="inputFile" class="form-control-label col-sm-3">Avatar</label>
+
+                        <div class="col-sm-9">
+                            <div class="col-sm-7 image-area">
+                                <img class="external-image"
+                                     ng-src="{{imageUrl}}" ngf-thumbnail="picFile" />
+                            </div>
+                            <div class="col-sm-5 button-browse-image">
+                                <span class="btn btn-primary-blue btn-file">
+                                    Browse
+                                    <input type="file" name="file" id="inputFile" ngf-select
+                                           ng-model="picFile" accept="image/*" ngf-max-size="1MB" />
+                                </span>
+                            </div>
+                        </div>
+                        <span class="validate-message message-validate-image" ng-show="addExternalTrainerForm.file.$invalid">
+                            <span ng-show="addExternalTrainerForm.file.$error.maxSize">
+                                Image file must be less than 1MB
+                            </span>
+                        </span>
+                    </div>
+                    <div class="row form-group">
+                        <div class="action-button">
+                            <input type="button" value="Cancel" class="btn btn-primary-gray"
+                                   ng-click="cancel()" />
+                            <input type="submit" value="Save" class="btn btn-primary-blue"
+                                   ng-click="ok(addExternalTrainerForm)" ng-disabled="isSendingRequest">
+                        </div><br />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="editExternalTrainerDialog.html">
+    <div class="external-trainer">
+        <div class="modal-header">
+            <h4>Edit External Trainer </h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="editExternalTrainerForm" id="editExternalTrainerForm" novalidate>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputName">
+                            Full Name
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputName" placeholder="Full Name" ng-maxlength="100"
+                                   ng-model="externalTrainerUpdate.FullName" name="fullName" autocomplete="off" required/>
+                            <span class="validate-message" ng-show="editExternalTrainerForm.fullName.$dirty
+                                                      || editExternalTrainerForm.$submitted">
+                                <span ng-show="editExternalTrainerForm.fullName.$error.required">
+                                    Name is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="editExternalTrainerForm.fullName.$dirty">
+                                <span ng-show="editExternalTrainerForm.fullName.$error.maxlength">
+                                    Name should be less than 100 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputUsername">
+                            Username
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputUsername" placeholder="Username" ng-maxlength="50"
+                                   ng-change="checkExistUsername(externalTrainerUpdate.Username)"
+                                   ng-model="externalTrainerUpdate.Username" name="username" autocomplete="off" required/>
+                            <span class="validate-message" ng-show="editExternalTrainerForm.username.$dirty
+                                                      || editExternalTrainerForm.$submitted">
+                                <span ng-show="editExternalTrainerForm.username.$error.required">
+                                    Username is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="editExternalTrainerForm.username.$dirty">
+                                <span ng-show="editExternalTrainerForm.username.$error.maxlength">
+                                    Username should be less than 50 characters
+                                </span>
+                                <span ng-show="isExistUsername && !editExternalTrainerForm.username.$error.required">
+                                    Username already exists
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputPassword">
+                            Password
+                        </label>
+                        <div class="col-sm-9">
+                            <input type={{inputType}} class="form-control" id="inputPassword" placeholder="Password" ng-maxlength="50"
+                                   ng-model="externalTrainerUpdate.ExternalUser.Password" name="password" autocomplete="off" required />
+                            <span class="validate-message" ng-show="editExternalTrainerForm.password.$dirty
+                                                      || editExternalTrainerForm.$submitted">
+                                <span ng-show="editExternalTrainerForm.password.$error.required">
+                                    Password is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="editExternalTrainerForm.password.$dirty">
+                                <span ng-show="editExternalTrainerForm.password.$error.maxlength">
+                                    Password should be less than 50 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <label class="control-label col-sm-3 external-user-label"></label>
+                        <div class="col-sm-1">
+                            <input type="checkbox" id="checkbox" ng-click="hideShowPassword()" />
+                        </div>
+                        <div class="col-sm-8">
+                            <label class="hide-show-checkbox" for="checkbox" ng-if="showPass">Show password</label>
+                            <label class="hide-show-checkbox" for="checkbox" ng-if="!showPass">Hide password</label>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputBadgeID">
+                            BadgeID
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputBadgeID" placeholder="BadgeID" ng-maxlength="20"
+                                   ng-change="checkExistBadgeID(externalTrainerUpdate.BadgeID)"
+                                   ng-model="externalTrainerUpdate.BadgeID" name="badgeID" autocomplete="off" required />
+                            <span class="validate-message" ng-show="editExternalTrainerForm.badgeID.$dirty
+                                                      || editExternalTrainerForm.$submitted">
+                                <span ng-show="editExternalTrainerForm.badgeID.$error.required">
+                                    BadgeID is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="editExternalTrainerForm.badgeID.$dirty">
+                                <span ng-show="editExternalTrainerForm.badgeID.$error.maxlength">
+                                    BadgeID should be less than 20 characters
+                                </span>
+                                <span ng-show="isExistBadgeID && !editExternalTrainerForm.badgeID.$error.required">
+                                    BadgeID already exists
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <label class="control-label col-sm-3 external-user-label" for="inputPosition">
+                            Position
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <input type="text" class="form-control" id="inputPosition" placeholder="Position" ng-maxlength="50"
+                                   ng-model="externalTrainerUpdate.ExternalUser.Position" name="position" />
+                            <span class="validate-message" ng-show="editExternalTrainerForm.position.$dirty">
+                                <span ng-show="editExternalTrainerForm.position.$error.maxlength">
+                                    Position should be less than 50 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required">
+                        <label class="control-label col-sm-3 external-user-label" for="inputUsername">
+                            Status
+                        </label>
+                        <div class="col-sm-9 external-user-input-bottom">
+                            <select class="form-control" name="status" id="status"
+                                    ng-options="status.Id as status.Name for status in statusArray"
+                                    ng-change="onStatusChange()"
+                                    ng-model="externalTrainerUpdate.IsDeleted" required>
+                                <option value="" hidden></option>
+                            </select>
+                            <span class="validate-message" ng-show="editExternalTrainerForm.$submitted
+                                                      || editExternalTrainerForm.status.$dirty">
+                                <span ng-show="!isStatusValid">
+                                    Status is required
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <label for="inputFile" class="form-control-label col-sm-3">Avatar</label>
+
+                        <div class="col-sm-9">
+                            <div class="col-sm-7 image-area">
+                                <img class="external-image"
+                                     ng-src="{{imageUrl}}" ngf-thumbnail="picFile" />
+                            </div>
+                            <div class="col-sm-5 button-browse-image">
+                                <span class="btn btn-primary-blue btn-file">
+                                    Browse
+                                    <input type="file" name="file" id="inputFile" ngf-select
+                                           ng-model="picFile" accept="image/*" ngf-max-size="1MB" />
+                                </span>
+                            </div>
+                        </div>
+                        <span class="validate-message message-validate-image" ng-show="editExternalTrainerForm.file.$invalid">
+                            <span ng-show="editExternalTrainerForm.file.$error.maxSize">
+                                Image file must be less than 1MB
+                            </span>
+                        </span>
+                    </div>
+                    <div class="row form-group">
+                        <div class="action-button">
+                            <input type="button" value="Cancel" class="btn btn-primary-gray"
+                                   ng-click="cancel()" />
+                            <input type="submit" value="Save" class="btn btn-primary-blue"
+                                   ng-click="ok(editExternalTrainerForm)" ng-disabled="isSendingRequest">
+                        </div><br />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>

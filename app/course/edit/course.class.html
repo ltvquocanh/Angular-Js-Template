@@ -1,0 +1,245 @@
+﻿<div class="course-class">
+    <div class="row">
+        <div class="content-table">
+            <div class="btn-toolbar table-controls" ng-if="hasAddClassPermission()">
+                <div class="btn-group pull-right">
+                    <a ng-show="route == 'course.class'" class="btn btn-secondary" ui-sref='course.addclass({id:courseId})'>
+                        <i class="fa fa-plus icon"></i>Add Class
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive well">
+                <table class="table table-striped" id="class-datatable"
+                       datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                       dt-instance="dtInstanceCallback">
+                    <thead>
+                        <tr class="table-header-row">
+                            <td class="col-number">#</td>
+                            <td>Class Name<i></i></td>
+                            <td>Start Time<i></i></td>
+                            <td>End Time<i></i></td>
+                            <td>Trainer<i></i></td>
+                            <td>Status<i></i></td>
+                            <td>Capacity<i></i></td>
+                            <td>Action</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="class in classes">
+                            <td class="col-number">{{ $index + 1}}</td>
+                            <td class="class-name">{{ class.Name }}</td>
+                            <td ng-if="class.StartTime != null">
+                                <span>
+                                    {{ class.StartTime | amDateFormat:'MMM DD, YYYY - HH:mm' }}
+                                </span>
+                            </td>
+                            <td ng-if="class.StartTime == null"></td>
+                            <td ng-if="class.EndTime != null">
+                                <span>
+                                    {{ class.EndTime | amDateFormat:'MMM DD, YYYY - HH:mm' }}
+                                </span>
+                            </td>
+                            <td ng-if="class.EndTime == null"></td>
+                            <td>
+                                <div ng-repeat="trainer in class.ClassTrainers">
+                                    {{trainer.FullName}}
+                                </div>
+                            </td>
+                            <td ng-if="class.StartTime > currentDateTime && class.Status != 'Cancelled'"
+                                class="text-align-center courses-class-not-started">
+                                Not Started
+                            </td>
+                            <td ng-if="class.EndTime == null && class.StartTime == null && class.Status != 'Cancelled'"
+                                class="text-align-center courses-class-not-started">
+                                Not Started
+                            </td>
+                            <td ng-if="class.Status != 'Cancelled' && class.StartTime <= currentDateTime && class.EndTime >= currentDateTime"
+                                class="text-align-center courses-class-ongoing">
+                                On Going
+                            </td>
+                            <td ng-if="class.EndTime < currentDateTime && class.EndTime != null && class.Status != 'Cancelled'"
+                                class="text-align-center courses-class-done">
+                                Done
+                            </td>
+                            <!--class is not start (start and end time == null)-->
+                            <td ng-if="class.Status == 'Cancelled'
+                                && class.EndTime == null && class.StartTime == null"
+                                class="text-align-center courses-class-cancelled">
+                                <span popover-template="'templateUpdate.html'"
+                                      popover-trigger="mouseenter" popover-placement="top"
+                                      ng-if="class.UpdatedBy != null && class.CancelReason !=null">
+                                    <span class="cancel-reason-pionter" ng-click="openCancelReason(class)">
+                                        Canceled
+                                    </span>
+                                    <i class="fa fa-info-circle cancel-reason-pionter" style="color:blue"
+                                       ng-if="class.UpdatedBy != null" ng-click="openCancelReason(class)"></i>
+                                </span>
+                                <span ng-if="class.UpdatedBy == null || class.CancelReason ==null"> Cancelled</span>
+                            </td>
+                            <!--class is not start (start and end time != null)-->
+                            <td ng-if="class.StartTime > currentDateTime && class.Status == 'Cancelled'"
+                                class="text-align-center courses-class-cancelled">
+                                <span popover-template="'templateUpdate.html'"
+                                      popover-trigger="mouseenter" popover-placement="top"
+                                      ng-if="class.UpdatedBy != null && class.CancelReason !=null">
+                                    <span class="cancel-reason-pionter" ng-click="openCancelReason(class)">
+                                        Canceled
+                                    </span>
+                                    <i class="fa fa-info-circle cancel-reason-pionter" style="color:blue"
+                                       ng-if="class.UpdatedBy != null" ng-click="openCancelReason(class)"></i>
+                                </span>
+                                <span ng-if="class.UpdatedBy == null  || class.CancelReason ==null"> Canceled</span>
+                            </td>
+                            <!--class is done-->
+                            <td ng-if="class.EndTime < currentDateTime && class.EndTime != null && class.Status == 'Cancelled'"
+                                class="text-align-center courses-class-cancelled">
+                                <span popover-template="'templateUpdate.html'"
+                                      popover-trigger="mouseenter" popover-placement="top"
+                                      ng-if="class.UpdatedBy != null && class.CancelReason !=null">
+                                    <span class="cancel-reason-pionter" ng-click="openCancelReason(class)">
+                                        Canceled
+                                    </span>
+                                    <i class="fa fa-info-circle cancel-reason-pionter" style="color:blue"
+                                       ng-if="class.UpdatedBy != null" ng-click="openCancelReason(class)"></i>
+                                </span>
+                                <span ng-if="class.UpdatedBy == null  || class.CancelReason ==null"> Canceled</span>
+                            </td>
+                            <td>{{ class.Capacity }}</td>
+                            <td>
+                                <a class="btn btn-icon-only" ui-sref='class.trainermethod({id: class.Id})'>
+                                    <i class="fa fa-pencil icon" title="Edit"></i>
+                                </a>
+                                <a class="btn btn-icon-only" data-toggle="model"
+                                   data-target="model" ng-click="deleteClass(class.Id)">
+                                    <i class="fa fa-times icon" title="Delete"></i>
+                                </a>
+                                <a class="btn btn-icon-only" data-toggle="model"
+                                   data-target="model" ng-click="cancelClass(class.Id)"
+                                   ng-hide="isCancel(class.Status, class.EndTime, class.StartTime)
+                                            || class.EndTime == null && class.StartTime == null">
+                                    <i class="fa fa-ban" title="Cancel"></i>
+                                </a>
+                                <a class="btn btn-icon-only" data-toggle="model"
+                                   data-target="model" uib-popover="Canceled"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   ng-show="isCancel(class.Status, class.EndTime, class.StartTime) && class.EndTime != null && class.StartTime != null" disabled>
+                                    <i class="fa fa-ban"></i>
+                                </a>
+                                <a class="btn btn-icon-only" data-toggle="model"
+                                   data-target="model" uib-popover="Start time and End time are not set"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   ng-show="class.EndTime == null && class.StartTime == null" disabled>
+                                    <i class="fa fa-ban"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/ng-template" id="SendMailCancelClass.html">
+    <div class="time-place">
+        <div class="modal-header">
+            <h4>Send Mail Cancel Class</h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="sendMailCancelClassForm" id="sendMailCancelClassForm">
+                    <div class="form-horizontal">
+                        <div class="row form-group required time-place-row">
+                            <label class="control-label col-sm-12 time-place-label">To</label>
+                            <div class="col-sm-12 message">
+                                <textarea class="form-control" name="to"
+                                          ng-model="mail.to" spellcheck="false"
+                                          rows="2" cols="60" required></textarea>
+                                <span class="validate-message"
+                                      ng-show="sendMailCancelClassForm.to.$dirty || sendMailCancelClassForm.$submitted">
+                                    <span ng-show="sendMailCancelClassForm.to.$error.required">
+                                        To is required
+                                    </span>
+                                    <span ng-show="!checkMailFormat(mail.to) 
+                                          && !sendMailCancelClassForm.cc.$error.required">
+                                        Mail format should be same as example: cdo_tool@tma.com.vn
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row form-group required time-place-row">
+                            <label class="control-label col-sm-12 time-place-label">Cc</label>
+                            <div class="col-sm-12 message">
+                                <textarea class="form-control"
+                                          rows="2" cols="60" name="cc"
+                                          ng-model="mail.cc" spellcheck="false" required></textarea>
+                                <span class="validate-message"
+                                      ng-show="sendMailCancelClassForm.cc.$dirty || sendMailCancelClassForm.$submitted">
+                                    <span ng-show="sendMailCancelClassForm.cc.$error.required">
+                                        Cc is required
+                                    </span>
+                                    <span ng-show="!checkMailFormat(mail.cc) 
+                                          && !sendMailCancelClassForm.to.$error.required">
+                                        Mail format should be same as example: cdo_tool@tma.com.vn
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row form-group required time-place-row" style="">
+                            <label class="control-label col-sm-12 time-place-label" for="content">
+                                Content
+                            </label>
+                            <div class="col-sm-12 message">
+                                <text-angular ng-model="mail.content" spellcheck="false"
+                                              name="content" required></text-angular>
+                                <span class="validate-message"
+                                      ng-show="sendMailCancelClassForm.content.$dirty || sendMailCancelClassForm.$submitted">
+                                    <span ng-show="sendMailCancelClassForm.content.$error.required">
+                                        Content is required
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class=" action-button ">
+                                <input class="btn btn-primary-gray" type="button" value="Cancel"
+                                       ng-click="cancel()" />
+                                <input class="btn btn-primary-blue" type="submit" value="Send" ng-disabled="isSendingRequest"
+                                       ng-click="ok(sendMailCancelClassForm)">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="templateUpdate.html" type="text/ng-template">
+    <p>
+        Session was canceled by
+        <b>{{class.UpdatedBy}}</b> at
+        <b>{{class.UpdatedDate | amDateFormat:'MMM DD, YYYY - HH:mm' }}</b>. Click to view reason.
+    </p>
+</script>
+<script type="text/ng-template" id="templateCancelReason.html">
+    <div class="time-place">
+        <div class="modal-header">
+            <h4>Cancel Reason</h4>
+        </div>
+        <div class="modal-inside-content">
+            <form class="general-form" name="templateCancelReason" id="templateCancelReason">
+                <div class="row">
+                    <span ng-bind-html="cancelReason | convertHtml"></span>
+                </div><br />
+                <div class="row">
+                    <div class="time-place-action">
+                        <input type="button" class="btn btn-primary-gray"
+                               ng-click="close()" value="Close">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</script>

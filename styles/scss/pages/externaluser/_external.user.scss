@@ -1,0 +1,50 @@
+﻿.external-trainer {
+    .col-number {
+        width: 5px !important;
+        padding-right: 10px !important;
+    }
+
+    .col-action {
+        text-align: center;
+        padding-left: 25px;
+    }
+
+    .external-image {
+        height: 155px;
+        width: 150px;
+        display: inline !important;
+    }
+
+    .general-form {
+        border: none;
+
+        .external-user-input-bottom {
+            margin-bottom: 10px;
+        }
+
+        .external-user-label {
+            margin-top: 7px;
+        }
+    }
+
+    .message-validate-image {
+        margin-left: 155px;
+    }
+
+    .button-browse-image {
+        margin: 65px 0px 0px -10px;
+    }
+
+    .image-area {
+        margin-left: -15px;
+    }
+
+    .hide-show-checkbox {
+        margin-left: -27px;
+        margin-top: 2px;
+    }
+
+    .word-break {
+        word-break: break-all;
+    }
+}

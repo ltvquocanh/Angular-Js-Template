@@ -1,0 +1,369 @@
+﻿<div class="class-activity">
+    <div class="row">
+        <div class="content-table">
+            <div class="btn-toolbar table-controls">
+                <div class="btn-group pull-right">
+                    <a ng-if="route == 'class.activity' && hasAddingFeedbackPermission() && !isCanceled"
+                       class="btn btn-secondary button-range"
+                       ui-sref="class.addsurvey({id:classId})">
+                        <i class="fa fa-comments-o icon"></i>
+                        Add Feedback
+                    </a>
+                    <a ng-if="route == 'class.activity' && hasAddingFeedbackPermission() && isCanceled"
+                       class="btn btn-secondary button-range" disabled
+                       popover-template="'templateUpdate.html'"
+                       popover-trigger="mouseenter" popover-placement="top">
+                        <i class="fa fa-comments-o icon"></i>
+                        Add Feedback
+                    </a>
+                    <a ng-if="route == 'class.activity' && hasAddingAssignmentPermission && !isCanceled"
+                       class="btn btn-secondary button-range"
+                       ui-sref="class.addassignment({id:classId})">
+                        <i class="fa fa-file-text-o icon"></i>
+                        Add Assignment
+                    </a>
+                    <a ng-if="route == 'class.activity' && hasAddingAssignmentPermission && isCanceled"
+                       class="btn btn-secondary button-range" disabled
+                       popover-template="'templateUpdate.html'"
+                       popover-trigger="mouseenter" popover-placement="top">
+                        <i class="fa fa-file-text-o icon"></i>
+                        Add Assignment
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive well">
+                <div ng-show="hasAddingFeedbackPermission() && hasAddingAssignmentPermission">
+                    <table class="table table-striped"
+                           datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                           dt-instance="dtInstanceCallback">
+                        <thead>
+                            <tr class="table-header-row">
+                                <td class="activity-col-number col-number">#</td>
+                                <td class="activity-col-name">Name<i></i></td>
+                                <td class="activity-col-date">Open Date<i></i> </td>
+                                <td class="activity-col-date">End Date<i></i></td>
+                                <td class="activity-col-status">Status<i></i></td>
+                                <td class="activity-col-created">Created By<i></i></td>
+                                <td class="activity-col-action">Action</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="activity in activities">
+                                <td class="col-number">{{ $index + 1}}</td>
+                                <td>
+                                    <a ng-if="activity.ActivityType == 1" ui-sref="assignmenttrainer({assignmentId:activity.Id})">{{ activity.Name }}</a>
+                                    <a ng-if="activity.ActivityType != 1" style="cursor:pointer" ng-click="preview(activity.Id)">{{ activity.Name }}</a>
+                                </td>
+                                <td>
+                                    <span ng-if="activity.StartTime != null">
+                                        {{ activity.StartTime | amDateFormat: dateFormat }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span ng-if="activity.EndTime != null">
+                                        {{ activity.EndTime | amDateFormat: dateFormat }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span ng-class="getStatusAndColor(activity.StartTime, activity.EndTime).cssClass">
+                                        {{getStatusAndColor(activity.StartTime, activity.EndTime).status}}
+                                    </span>
+                                </td>
+                                <td>{{ activity.CreatedBy }}</td>
+                                <td class="table-control-column">
+                                    <!--Edit-->
+                                    <a ng-if="activity.ActivityType == 1 && !isCanceled" class="btn btn-icon-only" title="Edit"
+                                       ui-sref="class.editassignment({assignmentId:activity.Id})">
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && !isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only" title="Edit"
+                                       ui-sref="survey.general({surveyId:activity.Id})">
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 1 && isCanceled"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <!--Delete-->
+                                    <a ng-if="activity.ActivityType == 1 && !isCanceled"
+                                       class="btn btn-icon-only" href="" title="Delete"
+                                       data-ng-click="deleteActivity(activity)">
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && !isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only" href="" title="Delete"
+                                       data-ng-click="deleteActivity(activity)">
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 1 && isCanceled"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <!--Mail-->
+                                    <a ng-if="!activity.IsSentSurvey && activity.ActivityType == 2  && !isCanceled
+                                   && !isCanceledClassSession(activity.IsCancelClassSession)
+                                   && activity.Status != 1 && activity.Status != 2"
+                                       href="" class="btn btn-icon-only" ng-click="sendRequestFeedback(activity.Id)" title="Send Mail">
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="activity.IsSentSurvey && activity.Status == 2 || activity.ActivityType == 2 && activity.Status == 2 && !isCanceled
+                                   && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       href="" uib-popover="Sent or Not Started"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="!activity.IsSentSurvey && activity.ActivityType == 2 && activity.Status == 1 && !isCanceled
+                                   && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       href="" uib-popover="Survey was closed"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceled "
+                                       href="" popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceledClassSession(activity.IsCancelClassSession)  && !isCanceled"
+                                       href="" popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div ng-show="!hasAddingFeedbackPermission()">
+                    <table class="table table-striped"
+                           datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                           dt-instance="dtInstanceCallback">
+                        <thead>
+                            <tr class="table-header-row">
+                                <td class="activity-col-number">#</td>
+                                <td class="activity-col-name">Name<i></i></td>
+                                <td class="activity-col-date">Open Date<i></i> </td>
+                                <td class="activity-col-date">End Date<i></i></td>
+                                <td class="activity-col-status">Status<i></i></td>
+                                <td class="activity-col-created">Created By<i></i></td>
+                                <td class="activity-col-action">Action</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="activity in activities">
+                                <td class="col-number">{{ $index + 1}}</td>
+                                <td>
+                                    <a ng-if="activity.ActivityType == 1" ui-sref="assignmenttrainer({assignmentId:activity.Id})">{{ activity.Name }}</a>
+                                    <a ng-if="activity.ActivityType != 1" style="cursor:pointer" ng-click="preview(activity.Id)">{{ activity.Name }}</a>
+                                </td>
+                                <td>
+                                    <span ng-if="activity.StartTime != null">
+                                        {{ activity.StartTime | amDateFormat: dateFormat }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span ng-if="activity.EndTime != null">
+                                        {{ activity.EndTime | amDateFormat: dateFormat }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-closed" ng-if="activity.Status == 1">
+                                        Closed
+                                    </span>
+                                    <span class="status-not-started" ng-if="activity.Status == 2 ">
+                                        Not Started
+                                    </span>
+                                    <span class="status-open" ng-if="activity.Status == 3">
+                                        Open
+                                    </span>
+                                </td>
+                                <td>{{ activity.CreatedBy }}</td>
+                                <td class="table-control-column">
+                                    <!--Edit-->
+                                    <a ng-if="activity.ActivityType == 1 && !isCanceled" class="btn btn-icon-only" title="Edit"
+                                       ui-sref="class.editassignment({assignmentId:activity.Id})">
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 1 && isCanceled"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <!--Delete-->
+                                    <a ng-if="activity.ActivityType == 1 && !isCanceled"
+                                       class="btn btn-icon-only" href="" title="Delete"
+                                       data-ng-click="deleteActivity(activity)">
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 1 && isCanceled"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <span ng-if="activity.ActivityType != 1"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div ng-show="!hasAddingAssignmentPermission">
+                    <table class="table table-striped"
+                           datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                           dt-instance="dtInstanceCallback">
+                        <thead>
+                            <tr class="table-header-row">
+                                <td class="activity-col-number">#</td>
+                                <td class="activity-col-name">Name<i></i></td>
+                                <td class="activity-col-date">Open Date<i></i> </td>
+                                <td class="activity-col-date">End Date<i></i></td>
+                                <td class="activity-col-status">Status<i></i></td>
+                                <td class="activity-col-created">Created By<i></i></td>
+                                <td class="activity-col-action">Action</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="activity in activities | filter: { ActivityType: '2' }">
+                                <td class="col-number">{{ $index + 1}}</td>
+                                <td>
+                                    {{ activity.Name }}
+                                </td>
+                                <td>
+                                    <span ng-if="activity.StartTime != null">
+                                        {{ activity.StartTime | amDateFormat: dateFormat }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span ng-if="activity.EndTime != null">
+                                        {{ activity.EndTime | amDateFormat: dateFormat }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-closed" ng-if="activity.Status == 1">
+                                        Closed
+                                    </span>
+                                    <span class="status-not-started" ng-if="activity.Status == 2 ">
+                                        Not Started
+                                    </span>
+                                    <span class="status-open" ng-if="activity.Status == 3">
+                                        Open
+                                    </span>
+                                </td>
+                                <td>{{ activity.CreatedBy }}</td>
+                                <td class="table-control-column">
+                                    <!--Edit-->
+                                    <a ng-if="activity.ActivityType == 2 && !isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only" title="Edit"
+                                       ui-sref="survey.general({surveyId:activity.Id})">
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-pencil icon"></i>
+                                    </a>
+                                    <!--Delete-->
+                                    <a ng-if="activity.ActivityType == 2 && !isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only" href="" title="Delete"
+                                       data-ng-click="deleteActivity(activity)">
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceled && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceledClassSession(activity.IsCancelClassSession)"
+                                       class="btn btn-icon-only"
+                                       popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                                        <i class="fa fa-times icon"></i>
+                                    </a>
+                                    <!--Mail-->
+                                    <a ng-if="!activity.IsSentSurvey && activity.ActivityType == 2  && !isCanceled
+                                   && !isCanceledClassSession(activity.IsCancelClassSession)
+                                   && activity.Status != 1 && activity.Status != 2"
+                                       href="" class="btn btn-icon-only" ng-click="sendRequestFeedback(activity.Id)" title="Send Mail">
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="activity.IsSentSurvey && activity.Status == 2 || activity.ActivityType == 2 && activity.Status == 2 && !isCanceled
+                                   && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       href="" uib-popover="Sent or Not Started"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="!activity.IsSentSurvey && activity.ActivityType == 2 && activity.Status == 1 && !isCanceled
+                                   && !isCanceledClassSession(activity.IsCancelClassSession)"
+                                       href="" uib-popover="Survey was closed"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceled "
+                                       href="" popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                    <a ng-if="activity.ActivityType == 2 && isCanceledClassSession(activity.IsCancelClassSession)  && !isCanceled"
+                                       href="" popover-template="'templateUpdate.html'"
+                                       popover-trigger="mouseenter" popover-placement="top"
+                                       class="btn btn-icon-only" disabled>
+                                        <i class="fa fa-share-square-o"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="templateUpdate.html" type="text/ng-template">
+    <p ng-if="isCanceled">Class was canceled</p>
+    <p ng-if="isClassDone && !isCanceledClassSession(activity.IsCancelClassSession) && !isCanceled">Class was done</p>
+    <p ng-if="isCanceledClassSession(activity.IsCancelClassSession) && !isClassDone && !isCanceled">Session was canceled</p>
+</script>

@@ -1,0 +1,191 @@
+﻿<br />
+<div class="assignment-trainer" ng-if="CanAccessAssignment()">
+    <div class="assignment-info well">
+        <div class="form-group">
+            <h4 class="title-assignment">{{assignment.Name}}</h4>
+            <p class="small-info">
+                Added by {{assignment.CreatedBy}}
+                {{assignment.CreatedDate | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+            </p>
+        </div>
+
+        <div class="assignment-info-content">
+            <div class="date-assignment form-group">
+                From <span class="start-date">{{assignment.StartTime | amDateFormat:'MMM  DD, YYYY - HH:mm'}}</span>
+                until <span class="end-date">{{assignment.EndTime | amDateFormat:'MMM  DD, YYYY - HH:mm'}}</span>
+            </div>
+
+            <div ng-init="isShowDescription = true" class="row form-group" ng-if="assignment.Description">
+                <label for="name" class="col-md-12">
+                    Description
+                    <a ng-click="isShowDescription = !isShowDescription"><i ng-class="{'fa fa-chevron-circle-down': isShowDescription,'fa fa-chevron-circle-up': !isShowDescription}"></i></a>
+                </label>
+                <div class="col-md-12" ng-if="isShowDescription">
+                    <p ng-bind-html="assignment.Description"></p>
+                </div>
+            </div>
+
+            <div class="row form-group" ng-if="assignment.Attachment">
+                <label for="name" class="label-attachment control-label"> Attached file</label>
+                <div class="info-attachment">
+                    <a class="link-assignment" ng-click="downloadAssignmentAttachment(assignment.Id, assignment.Attachment.Id)">
+                        {{assignment.Attachment.FileName}}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="answers-section">
+        <h4 class="title-answer">
+            SUBMITTED ANSWERS
+        </h4>
+        <div class="clearfix"></div>
+        <div class="answers-info">
+            <div class="btn-toolbar header-link form-group">
+                <div class="pull-left">
+                    <a ng-class="{'active-link':isScored}" class="btn btn-secondary" ng-click="showScoredAssignment();"><i class=" fa fa-check-circle-o fa-lg"></i> Scored ({{assignment.NumberOfScore}})</a>
+                    <a ng-class="{'active-link':!isScored}" class="btn btn-secondary number-waiting" ng-click="showWaitingAssignment();"><i class="fa fa-question-circle fa-lg"></i> Waiting ({{assignment.NumberOfWaiting}})</a>
+                </div>
+                <div class="pull-right">
+                    <a ng-click="reverse= !reverse" class="btn btn-secondary active-link pull-right">
+                        <span ng-if="!reverse">Sort by newest</span>
+                        <span ng-if="reverse">Sort by oldest</span>
+                        <i ng-class="{'fa fa-sort-amount-desc fa-lg': reverse,'fa fa-sort-amount-asc fa-lg': !reverse}"></i>
+                    </a>
+                </div>
+            </div>
+
+            <ul class="answers-body-list">
+                <!-- Start Repeat-->
+                <!-- a child scope will be created-->
+                <li class="answer-li form-group" ng-repeat="assignmentAnswer in assignment.Answers | filter: filerbyScore |orderBy: 'CreatedDate': reverse">
+                    <div class="answer-li-header">
+                        <div class="score-box" ng-class="getColorByScore(assignmentAnswer.Score)[0]">
+                            <p ng-show="assignmentAnswer.Score" class="score-point">{{assignmentAnswer.Score}}</p>
+                            <div ng-show="!assignmentAnswer.Score" class="score-question"> <i class="fa fa-question icon-question"></i></div>
+                        </div>
+                        <div class="user-box" ng-class="getColorByScore(assignmentAnswer.Score)[1]">
+                            <h4 class=" font-bold">
+                                {{assignmentAnswer.Participant.FullName}}
+                            </h4>
+                            <span>{{assignmentAnswer.CreatedDate | amDateFormat:'MMM  DD, YYYY - HH:mm'}}</span>
+                        </div>
+                    </div>
+                    <div class="answer-li-body">
+                        <!-- blank box -->
+                        <div class="score-box">
+                            <p class="score-point"></p>
+                        </div>
+                        <!--answer box-->
+                        <div class="answer-li-body-info" ng-init="showComment = true">
+                            <p ng-bind-html="assignmentAnswer.AnswerText"></p>
+                            <a class="link-assignment" ng-click="downloadAssignmentAnswerAttachment(assignmentAnswer.Id, assignmentAnswer.Attachment.Id)">
+                                {{assignmentAnswer.Attachment.FileName}}
+                            </a>
+                            <!-- div below show if trainner is not scoring -->
+                            <div ng-show="!assignmentAnswer.isScoring">
+                                <!-- div below will show if answer is scored-->
+                                <div ng-show="assignmentAnswer.Score">
+                                    <a class="pull-right " ng-show="showComment" ng-click="showComment =! showComment">Show comment</a>
+                                    <a class="pull-right " ng-show="!showComment" ng-click="showComment =! showComment">Hide comment</a>
+                                    <div class="clearfix"></div>
+                                    <div ng-show="!showComment" class="row comment-section">
+                                        <!-- Edit comment Score-->
+                                        <div class="vertical-bar">
+                                        </div>
+                                        <div class="comment-box">
+                                            <h5 class="comment-title">COMMENT</h5>
+                                            <a ng-click="assignmentAnswer.isScoring = true; assignmentAnswer.cancel = false">
+                                                <i class="fa fa-pencil fa-lg"></i>
+                                            </a>
+                                            <div class="form-group"></div>
+                                            <p ng-bind-html="assignmentAnswer.ScoreComment"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- div below will show if answer is not scored-->
+                                <div ng-show="!assignmentAnswer.Score">
+                                    <a class="pull-right "
+                                       ng-click="assignmentAnswer.isScoring = true; assignmentAnswer.cancel = false">
+                                        Give score
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div ng-if="!assignmentAnswer.cancel">
+                                <div ng-hide="showFirstAssignmentAnswer($index, assignmentAnswer)" class="row comment-section">
+                                    <div ng-if="assignmentAnswer.isScoring" ng-init="temp = copy(assignmentAnswer)">
+                                        <!-- Edit comment Score-->
+                                        <div class="vertical-bar">
+                                        </div>
+                                        <div class="comment-box">
+                                            <form name="commentForm" class="general-form" novalidate>
+                                                <div class="form-horizontal">
+                                                    <div class="form-group">
+                                                        <label for="name" class="col-md-2 control-label">
+                                                            SCORE
+                                                        </label>
+                                                        <div class="give-score col-md-10 btn-group">
+                                                            <label class="score-list btn btn-low-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="1">1</label>
+                                                            <label class="score-list btn btn-low-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="2">2</label>
+                                                            <label class="score-list btn btn-low-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="3">3</label>
+                                                            <label class="score-list btn btn-low-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="4">4</label>
+                                                            <label class="score-list btn btn-average-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="5">5</label>
+                                                            <label class="score-list btn btn-average-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="6">6</label>
+                                                            <label class="score-list btn btn-average-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="7">7</label>
+                                                            <label class="score-list btn btn-high-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="8">8</label>
+                                                            <label class="score-list btn btn-high-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="9">9</label>
+                                                            <label class="score-list btn btn-high-score"
+                                                                   ng-model="temp.Score" uib-btn-radio="10">10</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="clearfix form-group"></div>
+                                                    <div class="form-group">
+                                                        <label for="ScoreComment" class="col-md-2 control-label">
+                                                            COMMENT
+                                                        </label>
+                                                        <div class="col-md-10">
+                                                            <!--<div text-angular id="ScoreComment" ng-model="temp.ScoreComment" />-->
+                                                            <textarea rows="1" class="form-control custom-form-comment" ng-model="temp.ScoreComment"
+                                                                      id="ScoreComment"></textarea>
+                                                            <br />
+                                                            <span ng-show="commentForm.$submitted && !temp.Score && !temp.ScoreComment"
+                                                                  class="validate-message">Score or comment is required</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="clearfix"></div>
+                                                    <div class="form-group col-md-12">
+                                                        <div class="pull-right control-assignment-trainer">
+                                                            <button class="btn btn-primary-gray"
+                                                                    ng-click="cancel(assignmentAnswer); temp= copy(assignmentAnswer)">
+                                                                Cancel
+                                                            </button>
+                                                            <button class="btn btn-primary-blue"
+                                                                    ng-click="save(assignmentAnswer, temp)">
+                                                                Save
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

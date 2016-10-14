@@ -1,0 +1,152 @@
+﻿<div class="clearfix"></div>
+<div class="content-primary-header pull-left">
+    Recent Registration
+</div>
+<br/>
+<br />
+<br />
+<div class="clearfix"></div>
+<div>
+    <uib-accordion class="class-registration" close-others="true">
+
+        <uib-accordion-group class="content-table" panel-class="panel-default" is-open="class.open" ng-init="class.open =false" ng-repeat="class in classes">
+            <uib-accordion-heading class="panel-heading" ng-click=" class.open=!class.open">
+                <div class="panel-header">
+                    <div class="panel-left">
+                        <a class="" ui-sref="class.activity({id:class.Id})">{{class.editingClass.CourseName}} </a><br />
+                        <span style="color: black">({{class.editingClass.Name}}) </span>
+                    </div>
+                   
+                    <div class="panel-right">
+                        <i class="glyphicon pull-right" ng-class="{'glyphicon-chevron-down': class.open, 'glyphicon-chevron-right': !class.open}"></i>
+
+                        <div class="date pull-left">
+                            <i class="fa fa-clock-o fa-lg clock "></i>  {{class.StartTime | amDateFormat:'MMM DD, YYYY - HH:mm'}} - {{class.EndTime | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                        </div>
+
+                        <i ng-show="class.IsEmailNotifyRegistrationSent" class="fa fa-envelope fa-lg mail-icon pull-right" aria-hidden="true"></i>
+                        
+                    </div>
+                </div>
+            </uib-accordion-heading>
+
+            <div class="table-responsive well">
+                <table class="table table-striped"
+                       datatable="ng" dt-options="dtOptions"
+                       dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback">
+                    <thead class="blue-tab-header">
+                        <tr class="table-header-row">
+                            <td class="col-number">#</td>
+                            <td class="registration-col-name">Name<i></i></td>
+                            <td class="registration-col-project">Project<i></i></td>
+                            <td>Absence<span style="color:#E5EEF5">_</span>History<br />
+                                <small>
+                                    A | AR ||A+AR /<br /> All taken sessions
+                                </small>
+                            </td>
+                            <td class="vertical-align-middle col-check-box">
+                                <div class="checkbox checkbox-primary">
+                                    <input type="checkbox" id="checkboxVisible" ng-init="optionToggled(class.editingClass)"
+                                           ng-model="class.editingClass.isAcceptedAll" ng-click="selectAll(class.editingClass)" />
+                                    <label for="checkboxVisible"><b>Join</b></label>
+                                </div>
+                            </td>
+                            <td>Reject Reason<i></i></td>
+                            <td class="registration-col-position">Position<i></i></td>
+                            <td>Manager<i></i></td>
+                            <td>Location<i></i></td>
+                            <td>Date<i></i></td>
+                            <td>Manager's Status<i></i></td>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr ng-repeat="registration in class.editingClass.registrationDtos">
+                            
+                            <td class="col-number">
+                                {{$index + 1}}
+                            </td>
+                            <td>
+                                {{registration.FullName}}<br />
+                                ({{registration.Username}}@tma.com.vn)
+                            </td>
+                            <td>
+                                {{registration.ProjectName}}
+                            </td>
+                            <td>
+                                {{registration.trainingHistoryDto.AbsentSessions.length+registration.oldTrainingHistoryDto.numberAbsentFromFile}} &nbsp;|&nbsp;
+                                {{registration.trainingHistoryDto.AbsentReasonSessions.length+registration.oldTrainingHistoryDto.numberAbsentReasonFromFile}} &nbsp;|| &nbsp;
+                                {{registration.trainingHistoryDto.AbsentSessions.length + registration.oldTrainingHistoryDto.numberAbsentFromFile + registration.trainingHistoryDto.AbsentReasonSessions.length + registration.oldTrainingHistoryDto.numberAbsentReasonFromFile}}/{{registration.trainingHistoryDto.numberOfRegistration+registration.oldTrainingHistoryDto.numberOfRegistration}}
+
+                            </td>
+                            <td class="vertical-align-middle col-check-box">
+                                <div class="checkbox checkbox-primary">
+                                    <input type="checkbox" id="checbox{{$index + 1}}"
+                                           ng-show="!registration.IsDisableCheckBox"
+                                           ng-model="registration.IsAccepted" ng-change="optionToggled(class.editingClass, registration)" />
+                                    <input type="checkbox" id="checbox{{$index + 1}}"
+                                           ng-show="registration.IsDisableCheckBox" ng-disabled="registration.IsDisableCheckBox"
+                                           title="Class has been started"
+                                           ng-model="registration.IsAccepted" ng-change="optionToggled(class.editingClass, registration)" />
+                                    <label for="checbox{{$index + 1}}"></label>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="" ng-if="!registration.IsAccepted">
+                                    <select  ng-disabled="registration.IsDisableCheckBox" class="form-control"
+                                            ng-options="status.Id as status.Name for status in UNACCEPTED_STATUS" ng-model="registration.UnAcceptedStatusOfTTC"></select>
+                                   
+                                    <textarea placeholder="Add other reason" style="width:100%; margin-top: 5px;" ng-show="registration.UnAcceptedStatusOfTTC == 5" ng-model="registration.OtherUnAcceptedReasonOfTTC"></textarea>
+                                </div>
+                                <div class="" ng-if="registration.IsAccepted">
+                                    <div ng-init="registration.UnAcceptedStatusOfTTC = null">
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {{registration.Position}}
+                            </td>
+                            <td class="vertical-align-middle">
+                                <span ng-show="registration.ManagerFullName != null">
+                                    {{registration.ManagerFullName}}<br />
+                                    ({{registration.ManagerUsername}}@tma.com.vn)
+                                </span>
+                            </td>
+                            <td class="vertical-align-middle">
+                                {{registration.Location}}
+                            </td>
+                            <td class="vertical-align-middle" ng-show="registration.CreatedDate != null">
+                                {{ registration.CreatedDate | amDateFormat: dateFormat }}
+                            </td>
+                            <td>
+                                <span class="text-color-pendding-approval" ng-show="registration.Status == 1">
+                                    <b>Pending Approval</b>
+                                </span>
+                                <span class="text-color-approve" ng-show="registration.Status == 2">
+                                    <b>Approved</b>
+                                </span>
+                                <span ng-show="registration.Status == 3">
+                                    <b>Requesting Withdrawal</b>
+                                </span>
+                                <span ng-show="registration.Status == 4">
+                                    <b>Withdrawal Approved</b>
+                                </span>
+                                <span class="text-color-rejected" ng-show="registration.Status == 5">
+                                    <b>Rejected</b>
+                                </span>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pull-right">
+                    <input ng-disabled="class.editingClass.registrationDtos.length == 0 || isSendingRequest || class.IsEmailNotifyRegistrationSent" type="submit" form="courseForm" class="btn btn-primary-blue" ng-click="sendMail(class, $index)" value="Send mail" />
+                    <input type="button" class="btn btn-primary-gray" ng-click="reset(class)" value="Reset" ng-disabled="isSendingRequest || class.editingClass.registrationDtos.length == 0 ">
+                    <input ng-disabled="class.editingClass.registrationDtos.length == 0 || isSendingRequest" type="submit" form="courseForm" class="btn btn-primary-blue" ng-click="save(class, class.editingClass.registrationDtos)" value="Save" />
+                   
+                </div>
+            </div>
+        </uib-accordion-group>
+    </uib-accordion>
+</div>
+

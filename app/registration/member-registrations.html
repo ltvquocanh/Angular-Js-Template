@@ -1,0 +1,329 @@
+﻿<div class="member-registrations">
+    <div class="row">
+        <div class="content-table">
+            <br />
+            <div class="content-primary-header">Member Registrations</div><br />
+            <div class="content-secondary-header">Pending Approval</div><br />
+            <div class="table-responsive well">
+                <div class="search-header">
+                    <div class="search-box col-md-3">
+                        <label class="col-md-3"><span style="float:right">Name: </span></label>
+                        <span class="glyphicon glyphicon-search search-input col-md-9">
+                            <input autofocus
+                                   id="searchName"
+                                   type="text" spellcheck="false"
+                                   placeholder="Name or Username"
+                                   typeahead="getUsernameAndFullNameNoEqual.FullName for getUsernameAndFullNameNoEqual in getUsernameAndFullNameNoEquals | filter:$viewValue"
+                                   typeahead-template-url='searchName.html'
+                                   typeahead-focus-first="true"
+                                   typeahead-focus-on-select="true"
+                                   ng-model="searchPendingRegistration.FullName">
+                        </span>
+                    </div>
+                    <div class="search-box col-md-3">
+                        <div class="form-group">
+                            <div class="">
+                                <label>Project: </label>
+                                <select class="dropdown-search" id="searchProject"
+                                        ng-options="getProjectNoEqual for getProjectNoEqual in getProjectNoEquals"
+                                        autofocus ng-model="searchPendingRegistration.ProjectName">
+                                    <option value="" hidden selected>Search Project</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!--search follow course-->
+                    <!--<div class="search-box col-md-3">
+                        <label class="col-md-3"><span style="float:right">Course: </span></label>
+                        <span class="glyphicon glyphicon-search search-input col-md-9">
+                            <input autofocus
+                                   id="searchCourse"
+                                   type="text" spellcheck="false"
+                                   placeholder="Course Name"
+                                   typeahead="getCourseNameNoEqual for getCourseNameNoEqual in getCourseNameNoEquals | filter:$viewValue"
+                                   typeahead-template-url='searchCourse.html'
+                                   typeahead-focus-first="true"
+                                   typeahead-focus-on-select="true"
+                                   ng-model="searchPendingRegistration.CourseName">
+                        </span>
+                    </div>-->
+                    <div class="search-box col-md-3">
+                        <label class="col-md-3"><span style="float:right">Class: </span></label>
+                        <span class="glyphicon glyphicon-search search-input col-md-9">
+                            <input autofocus
+                                   id="searchClass"
+                                   type="text" spellcheck="false"
+                                   placeholder="Class Name"
+                                   typeahead="getClassNameNoEqual for getClassNameNoEqual in getClassNameNoEquals | filter:$viewValue"
+                                   typeahead-template-url='searchClass.html'
+                                   typeahead-focus-first="true"
+                                   typeahead-focus-on-select="true"
+                                   ng-model="searchPendingRegistration.ClassName">
+                        </span>
+                    </div>
+                    <div class="search-box col-md-3">
+                        <div class="form-group">
+                            <div class="">
+                                <label>Status: </label>
+                                <select class="dropdown-search" id="searchProject"
+                                        ng-options="statusDetail for statusDetail in pendingRegistrationsStatusDetails"
+                                        autofocus ng-model="searchPendingRegistration.StatusDetail">
+                                    <option value="" hidden selected>Search Status</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="buttom-clean">
+                        <a class="btn btn-primary-blue" ng-click="cleanPending()">
+                            Clear
+                        </a>
+                    </div>
+                </div>
+                <table datatable="ng" dt-options="dtOptions"
+                       dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback"
+                       class="table table-striped">
+                    <thead>
+                        <tr class="table-header-row">
+                            <td class="pending-approval-col-number">#</td>
+                            <td class="pending-approval-col-checkbox">
+                                <div class="checkbox checkbox-primary">
+                                    <input type="checkbox" id="checkboxVisible" ng-disabled="pendingRegistrations == 0"
+                                           ng-model="isCheckedAll" ng-click="checkedAll()" ng-cloak/>
+                                    <label for="checkboxVisible"><b>All</b></label>
+                                </div>
+                            </td>
+                            <td class="pending-approval-col-name">Name<i></i></td>
+                            <td class="pending-approval-col-project">Project<i></i></td>
+                            <td class="pending-approval-col-email">Email<i></i></td>
+                            <td class="pending-approval-col-position">Position<i></i></td>
+                            <!--<td class="pending-approval-col-course-name">Course Name<i></i></td> search follow course-->
+                            <td class="pending-approval-col-course-name">Class Name<i></i></td>
+                            <td class="pending-approval-col-starttime">Start Time<i></i></td>
+                            <td class="pending-approval-col-endtime">End Time<i></i></td>
+                            <td class="pending-approval-col-status">Status<i></i></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="pendingRegistration in pendingRegistrations | filter: searchPendingRegistration">
+                            <td class="pending-approval-col-number">{{$index + 1}}</td>
+                            <td class="pending-approval-col-checkbox">
+                                <div class="checkbox checkbox-primary">
+                                    <input type="checkbox" id="checbox{{$index + 1}}"
+                                           ng-model="pendingRegistration.selected" ng-change="optionToggled()" />
+                                    <label for="checbox{{$index + 1}}"></label>
+                                </div>
+                            </td>
+                            <td class="pending-approval-col-name">{{pendingRegistration.FullName}}</td>
+                            <td class="pending-approval-col-project">{{pendingRegistration.ProjectName}}</td>
+                            <td class="pending-approval-col-email">{{pendingRegistration.Username}}@tma.com.vn</td>
+                            <td class="pending-approval-col-position">{{pendingRegistration.Position}}</td>
+                            <!--<td class="pending-approval-col-course-name">{{pendingRegistration.CourseName}}</td> search follow course-->
+                            <td class="pending-approval-col-course-name">{{pendingRegistration.ClassName}}</td>
+                            <td class="pending-approval-col-starttime">{{ pendingRegistration.classStartTime | amDateFormat:dateFormat }}</td>
+                            <td class="pending-approval-col-endtime">{{ pendingRegistration.classEndTime | amDateFormat:dateFormat }}</td>
+                            <td class="pending-approval-col-status">
+                                <span class="pending-approval-color" ng-if="pendingRegistration.Status == 1">
+                                    <b>Pending Approval</b>
+                                </span>
+                                <span class="requesting-withdrawal-color" ng-if="pendingRegistration.Status == 3">
+                                    <b>Requesting Withdrawal</b>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="float-right-button">
+                    <button class="btn btn-primary-gray" ng-click="reject()" 
+                            ng-disabled="pendingRegistrations == 0" ng-cloak>Reject</button>
+                    <button class="btn btn-primary-blue button-approved" ng-click="approve()"
+                            ng-disabled="pendingRegistrations == 0" ng-cloak>
+                        Approve
+                    </button>
+                </div>
+            </div>
+
+            <!--History-->
+            <div class="content-secondary-header">History</div><br />
+            <div class="table-responsive well">
+                <div class="search-header">
+                    <div class="search-box col-md-3">
+                        <label class="col-md-3"><span style="float:right">Name: </span></label>
+                        <span class="glyphicon glyphicon-search search-input col-md-9">
+                            <input autofocus
+                                   id="searchName"
+                                   type="text" spellcheck="false"
+                                   placeholder="Name or Username"
+                                   typeahead="getUsernameAndFullNameHistoryNoEqual.FullName for getUsernameAndFullNameHistoryNoEqual in getUsernameAndFullNameHistoryNoEquals | filter:$viewValue"
+                                   typeahead-template-url='searchName.html'
+                                   typeahead-focus-first="true"
+                                   typeahead-focus-on-select="true"
+                                   ng-model="searchFunction.FullName">
+                        </span>
+                    </div>
+
+                    <div class="search-box col-md-3">
+                        <div class="form-group">
+                            <div class="">
+                                <label>Project: </label>
+                                <select class="dropdown-search" id="searchProject"
+                                        ng-options="getProjectHistoryNoEqual for getProjectHistoryNoEqual in getProjectHistoryNoEquals"
+                                        autofocus ng-model="searchFunction.ProjectName">
+                                    <option value="" hidden selected>Search Project</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!--search follow course-->
+                    <!--<div class="search-box col-md-3">
+                        <label class="col-md-3"><span style="float:right">Course: </span></label>
+                        <span class="glyphicon glyphicon-search search-input col-md-9">
+                            <input autofocus
+                                   id="searchCourse"
+                                   type="text" spellcheck="false"
+                                   placeholder="Course Name"
+                                   typeahead="getCourseNameHistoryNoEqual for getCourseNameHistoryNoEqual in getCourseNameHistoryNoEquals | filter:$viewValue"
+                                   typeahead-template-url='searchCourse.html'
+                                   typeahead-focus-first="true"
+                                   typeahead-focus-on-select="true"
+                                   ng-model="searchFunction.CourseName">
+                        </span>
+                    </div>-->
+                    <div class="search-box col-md-3">
+                        <label class="col-md-3"><span style="float:right">Class: </span></label>
+                        <span class="glyphicon glyphicon-search search-input col-md-9">
+                            <input autofocus
+                                   id="searchClass"
+                                   type="text" spellcheck="false"
+                                   placeholder="Class Name"
+                                   typeahead="getClassNameHistoryNoEqual for getClassNameHistoryNoEqual in getClassNameHistoryNoEquals | filter:$viewValue"
+                                   typeahead-template-url='searchClass.html'
+                                   typeahead-focus-first="true"
+                                   typeahead-focus-on-select="true"
+                                   ng-model="searchFunction.ClassName">
+                        </span>
+                    </div>
+                    <div class="search-box col-md-3">
+                        <div class="form-group">
+                            <div class="">
+                                <label>Status: </label>
+                                <select class="dropdown-search" id="searchStatus"
+                                        ng-options="statusDetail for statusDetail in historyRegistrationsStatusDetails"
+                                        autofocus ng-model="searchFunction.StatusDetail">
+                                    <option value="" hidden selected>Search Status</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="buttom-clean">
+                        <a class="btn btn-primary-blue" ng-click="cleanHistory()">
+                            Clear
+                        </a>
+                    </div>
+                </div>
+                <br />
+                <table datatable="ng" dt-options="dtOptions"
+                       dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback"
+                       class="table table-striped">
+                    <thead>
+                        <tr class="table-header-row">
+                            <td class="pending-approval-col-number">#</td>
+                            <td class="history-col-name">Name<i></i></td>
+                            <td class="pending-approval-col-project">Project<i></i></td>
+                            <td class="pending-approval-col-email">Email<i></i></td>
+                            <td class="pending-approval-col-position">Position<i></i></td>
+                            <!--<td class="pending-approval-col-course-name">Course Name<i></i></td> search follow course-->
+                            <td class="pending-approval-col-course-name">Class Name<i></i></td>
+                            <td class="pending-approval-col-starttime">Start Date<i></i></td>
+                            <td class="history-col-endtime">End Date<i></i></td>
+                            <td class="pending-approval-col-status">Status<i></i></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="historyRegistration in historyRegistrations | filter: searchFunction">
+                            <td class="pending-approval-col-number">{{$index + 1}}</td>
+                            <td class="history-col-name">{{historyRegistration.FullName}}</td>
+                            <td class="pending-approval-col-project">{{historyRegistration.ProjectName}}</td>
+                            <td class="pending-approval-col-email">{{historyRegistration.Username}}@tma.com.vn</td>
+                            <td class="pending-approval-col-position">{{historyRegistration.Position}}</td>
+                            <!--<td class="pending-approval-col-course-name">{{historyRegistration.CourseName}}</td> search follow course-->
+                            <td class="pending-approval-col-course-name">{{historyRegistration.ClassName}}</td>
+                            <td class="pending-approval-col-starttime">{{ historyRegistration.classStartTime | amDateFormat:dateFormat }}</td>
+                            <td class="pending-approval-col-status">{{ historyRegistration.classEndTime | amDateFormat:dateFormat }}</td>
+                            <td class="pending-approval-col-status">
+                                <span class="approved-color" ng-if="historyRegistration.Status == 2">
+                                    <b>Approved</b>
+                                </span>
+
+                                <span ng-if="historyRegistration.Status == 4">
+                                    <b>Withdrawal Approved</b>
+                                </span>
+                                <span class="rejected-color" ng-if="historyRegistration.Status == 5" uib-popover="{{historyRegistration.CommentReject}}"
+                                   popover-trigger="mouseenter" popover-placement="top">
+                                    <b>Rejected</b>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/ng-template" id="searchName.html">
+    <a>
+        <span ng-bind-html="match.model.FullName+' ('+match.model.Username+')'| uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
+<!--search follow course-->
+<!--<script type="text/ng-template" id="searchCourse.html">
+    <a>
+        <span ng-bind-html="match.model | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>-->
+
+<script type="text/ng-template" id="searchClass.html">
+    <a>
+        <span ng-bind-html="match.model | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
+<script type="text/ng-template" id="Reject.html">
+    <div class="member-registrations">
+        <div class="modal-header">
+            <h4>Reject Reason</h4>
+        </div>
+        <form class="general-form" name="rejectForm" id="rejectForm" novalidate>
+            <div>
+                <div class="form-group required">
+                    <label>Reject Reason</label>
+                    <div>
+                        <textarea class="form-control" rows="4" cols="50"
+                                  ng-model="rejectReason" style="resize:vertical"
+                                  name="rejectReason" required></textarea>
+                    </div>
+                    <span class="validate-message"
+                          ng-show="rejectForm.$submitted || rejectForm.rejectReason.$dirty">
+                        <span ng-show="rejectForm.rejectReason.$error.required">
+                            Reject reason is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="float-right-button">
+                    <div class="button-reject-modal">
+                        <button type="button" class="btn btn-primary-gray"
+                                ng-click="cancel()">
+                            Cancel
+                        </button>
+                        <input type="submit" class="btn btn-primary-blue"
+                               ng-disabled="isSendingRequest"
+                               ng-click="ok(rejectForm, rejectReason)" value="Ok" />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>

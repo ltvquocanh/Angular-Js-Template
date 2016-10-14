@@ -1,0 +1,336 @@
+﻿<div class="class-registration">
+
+    <div class="row">
+        <div class="content-table">
+            <div class="btn-toolbar table-controls">
+                <div class="btn-group pull-right"
+                     ng-show="hasImportAndExportAndAddRegistrationPermission()">
+                    <a class="btn btn-secondary export" title="Export" ng-click="exportRegistrations()">
+                        <i class="fa fa-upload icon"></i>Export
+                    </a>
+                    <a class="btn btn-secondary import" title="Import" ng-show="!isCancel"
+                       ng-click="openModalImportRegistrations(classId)">
+                        <i class="fa fa-download icon"></i>Import
+                    </a>
+                    <a class="btn btn-secondary import" title="Import" ng-show="isCancel"
+                       popover-template="'templateUpdate.html'" popover-trigger="mouseenter" 
+                       popover-placement="top" ng-disabled="isCancel">
+                        <i class="fa fa-download icon"></i>Import
+                    </a>
+                    <!-- have not requirement for 2 function 
+                    <!--<a class="btn btn-secondary export" title="Export" ng-show="!isCancel">
+                        <i class="fa fa-upload icon"></i>Export
+                    </a>
+                    <a class="btn btn-secondary import" title="Import" ng-show="!isCancel">
+                        <i class="fa fa-download icon"></i>Import
+                    </a>-->
+                    <!--<a class="btn btn-secondary export" ng-show="isCancel"
+                       popover-template="'templateUpdate.html'"
+                       popover-trigger="mouseenter" popover-placement="top"
+                       ng-disabled="isCancel">
+                        <i class="fa fa-upload icon"></i>Export
+                    </a>
+                    <a class="btn btn-secondary import" ng-show="isCancel"
+                       popover-template="'templateUpdate.html'"
+                       popover-trigger="mouseenter" popover-placement="top"
+                       ng-disabled="isCancel">
+                        <i class="fa fa-download icon"></i>Import
+                    </a>-->
+                    <a class="btn btn-secondary" title="Add registration" ng-show="!isCancel"
+                       ng-click="openModalAddRegistration(courseId)">
+                        <i class="fa fa-plus icon"></i>Add registration
+                    </a>
+                    <a class="btn btn-secondary" ng-show="isCancel"
+                       popover-template="'templateUpdate.html'"
+                       popover-trigger="mouseenter" popover-placement="top"
+                       ng-disabled="isCancel">
+                        <i class="fa fa-plus icon"></i>Add registration
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive well">
+                <table class="table table-striped"
+                       datatable="ng" dt-options="dtOptions"
+                       dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback">
+                    <thead class="blue-tab-header">
+                        <tr class="table-header-row">
+                            <td ng-show="hasResetAndSavePermission()" class="vertical-align-middle col-check-box">
+                                <div class="checkbox checkbox-primary">
+                                    <input type="checkbox" id="checkboxVisible" ng-disabled="isCancel"
+                                           ng-model="isAcceptedAll" ng-click="selectAll()" />
+                                    <label for="checkboxVisible"><b>Join</b></label>
+                                </div>
+                            </td>
+                            <td class="col-number">#</td>
+                            <td class="registration-col-name">Name<i></i></td>
+                            <td>BadgeID<i></i></td>
+                            <td class="registration-col-project">Project<i></i></td>
+                            <td class="registration-col-position">Position<i></i></td>
+                            <td>Manager<i></i></td>
+                            <td class="registration-col-location">Location<i></i></td>
+                            <td>Date<i></i></td>
+                            <td class="registration-col-status">Manager<span style="color: #E5EEF5">_</span>Status<i></i></td>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr ng-repeat="registration in registrations">
+                            <td class="vertical-align-middle col-check-box" ng-show="hasResetAndSavePermission()">
+                                <div class="checkbox checkbox-primary">
+                                    <input type="checkbox" id="checbox{{$index + 1}}"
+                                           ng-disabled="isDisableCheckboxs[$index] || isCancel"
+                                           ng-model="registration.IsAccepted" ng-change="optionToggled()" />
+                                    <!--<input type="checkbox" id="checbox{{$index + 1}}"
+                                           ng-show="isDisableCheckboxs[$index]" ng-disabled="isDisableCheckboxs[$index]"
+                                           title="Class has been started"
+                                           ng-model="registration.IsAccepted" ng-change="optionToggled()" />-->
+                                    <label for="checbox{{$index + 1}}"></label>
+                                </div>
+                            </td>
+                            <td class="col-number">
+                                {{$index + 1}}
+                            </td>
+                            <td>
+                                <span class="registration-uppercase-full-name">{{registration.FullName}}</span><br />
+                                {{registration.Username}}@tma.com.vn
+                            </td>
+                            <td>
+                                {{registration.User.BadgeID}}
+                            </td>
+                            <td>
+                                {{registration.ProjectName}}
+                            </td>
+                            <td>
+                                {{registration.Position}}
+                            </td>
+                            <td class="vertical-align-middle">
+                                <span ng-show="registration.ManagerFullName != null">
+                                    {{registration.ManagerFullName}}<br />
+                                    ({{registration.ManagerUsername}}@tma.com.vn)
+                                </span>
+                            </td>
+                            <td class="vertical-align-middle">
+                                {{registration.Location}}
+                            </td>
+                            <td class="vertical-align-middle" ng-show="registration.CreatedDate != null">
+                                {{ registration.CreatedDate | amDateFormat: dateFormat }}
+                            </td>
+                            <td ng-if="!hasChangeStatusPermission()">
+                                <span class="text-color-pendding-approval" ng-show="registration.Status == 1">
+                                    <b>Pending Approval</b>
+                                </span>
+                                <span class="text-color-approve" ng-show="registration.Status == 2">
+                                    <b>Approved</b>
+                                </span>
+                                <span ng-show="registration.Status == 3">
+                                    <b>Requesting Withdrawal</b>
+                                </span>
+                                <span ng-show="registration.Status == 4">
+                                    <b>Withdrawal Approved</b>
+                                </span>
+                                <span class="text-color-rejected" ng-show="registration.Status == 5">
+                                    <b>Rejected</b>
+                                </span>
+                            </td>
+                            <td ng-if="hasChangeStatusPermission()">
+                                <select class="form-control" name="status" id="selectStatus"
+                                        ng-options="status.Id as status.Name for status in allStatus"
+                                        ng-model="registration.Status" required>
+                                    <option value="" hidden></option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pull-right" ng-if="hasResetAndSavePermission() && !isCancel">
+                <input type="button" class="btn btn-primary-gray" ng-click="reset()"
+                       value="Reset" ng-disabled="isSendingRequest">
+                <input ng-disabled="registrations.length == 0" type="submit"
+                       form="courseForm" class="btn btn-primary-blue" ng-click="save()" value="Save" />
+            </div>
+            <div class="pull-right" ng-if="hasResetAndSavePermission() && isCancel">
+                <span popover-template="'templateUpdate.html'"
+                      popover-trigger="mouseenter" popover-placement="top">
+                    <input type="button" class="btn btn-primary-gray"
+                           value="Reset" ng-disabled="isCancel">
+                </span>
+                <span popover-template="'templateUpdate.html'"
+                      popover-trigger="mouseenter" popover-placement="top">
+                    <input type="submit" form="courseForm" class="btn btn-primary-blue"
+                           value="Save" ng-disabled="isCancel || registrations.length == 0">
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/ng-template" id="addRegistrationDialog.html">
+    <div class="class-registration">
+
+        <div class="modal-header">
+            <h4>Add Registration</h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="addRegistrationForm" novalidate>
+                    <div class="form-horizontal">
+                        <div class="row form-group registration-row required">
+                            <label class="control-label col-sm-2 registration-label" for="user">
+                                User
+                            </label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="user"
+                                       ng-model="userRegistration" spellcheck="false"
+                                       name="registrationName" required
+                                       typeahead-on-select="onSelectUser($item, newRegistration.Status)"
+                                       typeahead="user as user.FullName for user in getMatchingUsers($viewValue) | limitTo:8"
+                                       typeahead-select-on-blur="true"
+                                       typeahead-template-url='tpl.html' autocomplete="off">
+
+                                <span class="validate-message" ng-show="addRegistrationForm.$submitted
+                                                      || addRegistrationForm.registrationName.$dirty">
+                                    <span ng-show="addRegistrationForm.registrationName.$error.required
+                                        || newRegistration.UserId == null">
+                                        User is missing or invalid
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row form-group registration-row">
+                            <label class="control-label col-sm-2 registration-label" for="project">
+                                Project
+                            </label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="project"
+                                       ng-model="newRegistration.ProjectName" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row form-group registration-row">
+                            <label class="control-label col-sm-2 registration-label" for="position">
+                                Position
+                            </label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="position"
+                                       ng-model="newRegistration.Position" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row form-group registration-row">
+                            <label class="control-label col-sm-2 registration-label" for="manager">
+                                Manager
+                            </label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="manager"
+                                       ng-model="manager" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row form-group registration-row">
+                            <label class="control-label col-sm-2 registration-label" for="location">
+                                Location
+                            </label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="location"
+                                       ng-model="newRegistration.Location" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row form-group registration-row required">
+                            <label class="control-label col-sm-2 registration-label" for="status">
+                                Status
+                            </label>
+                            <div class="col-sm-10">
+                                <select class="form-control" name="registrationStatus" id="status"
+                                        ng-options="status.Id as status.Name for status in statusArray"
+                                        ng-change="onStatusChange()"
+                                        ng-model="newRegistration.Status" required>
+                                    <option value="" hidden></option>
+                                </select>
+                                <span class="validate-message" ng-show="addRegistrationForm.$submitted
+                                                      || addRegistrationForm.registrationStatus.$dirty">
+                                    <span ng-show="!isStatusValid">
+                                        Status is required
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="action-button">
+                                <input type="button" class="btn btn-primary-gray"
+                                       ng-click="cancel()" value="Cancel">
+
+                                <input type="submit" class="btn btn-primary-blue"
+                                       ng-click="ok(addRegistrationForm)" value="Save" ng-disabled="isSendingRequest" />
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="tpl.html">
+    <a class="btn dropdown-autocomplete" data-toggle="dropdown">
+        {{match.model.FullName+" ("+match.model.Username+" - "+match.model.Username+"@tma.com.vn)"}}
+    </a>
+</script>
+
+<script id="templateUpdate.html" type="text/ng-template">
+    <p>Class was canceled</p>
+</script>
+
+<script type="text/ng-template" id="importRegistrationsDialog.html">
+    <div class="class-registration">
+        <div class="modal-header">
+            <h4>Import Registrator Data</h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="importRegistrationsForm" novalidate>
+                    <div class="row form-group required">
+                        <label for="importFile" class="control-label col-sm-3">
+                            Select file
+                        </label>
+                        <div class="col-sm-6">
+                            <input class="form-control" type="text" name="nameFile" autocomplete="off"
+                                   ng-model="importFile.name" required readonly/>
+                            <span class="validate-message" ng-show="importRegistrationsForm.$submitted">
+                                <span ng-show="importRegistrationsForm.nameFile.$error.required && !importRegistrationsForm.importFile.$error.maxSize">
+                                    Select file is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="importRegistrationsForm.importFile.$invalid">
+                                <span ng-show="importRegistrationsForm.importFile.$error.maxSize">
+                                    File must be less than 4MB
+                                </span>
+                            </span>
+                        </div>
+                        <div class="col-sm-1">
+                            <span class="btn btn-primary-blue btn-file">
+                                Browse
+                                <input type="file" ngf-select ng-model="importFile"
+                                       id="importFile" name="importFile" ngf-max-size="4MB"
+                                       accept=".xlsx">
+                            </span>
+                        </div>
+                    </div>
+                    <div class="registration-action-file">
+                        <input type="button" class="btn btn-primary-gray"
+                               ng-click="cancel()" value="Cancel">
+
+                        <input type="submit" class="btn btn-primary-blue" ng-disabled="isSendingRequest"
+                               ng-click="import(importRegistrationsForm)" value="Import" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>

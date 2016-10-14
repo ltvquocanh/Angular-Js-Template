@@ -1,0 +1,318 @@
+﻿<div class="survey-report">
+    <div class="col-md-12">
+        <a class="btn btn-secondary pull-right" title="Export" ng-click="exportSurvey()">
+            <i class="fa fa-upload icon"></i>Export
+        </a>
+    </div>
+    <div class="clearfix"></div>
+    <div class="well">
+        <div class="row header-information">
+            <div class="col-md-1"></div>
+            <div class="col-md-5 information-of-survey">
+                <div class="row row-information">
+                    <label class="col-md-5">Trainers:</label>
+                    <div class="col-md-7">
+                        <div ng-repeat="trainer in trainers track by $index">{{trainer.FullName}}</div>
+                    </div>
+                </div>
+                <div class="row row-information">
+                    <label class="col-md-5">Participants:</label>
+                    <div class="col-md-7">{{participants}}</div>
+                </div>
+                <div class="row row-information">
+                    <label class="col-md-5">Registrations:</label>
+                    <div class="col-md-7">{{registrations}}</div>
+                </div>
+                <div class="row row-information">
+                    <label class="col-md-5 ">Submitted Feedback:</label>
+                    <div class="col-md-7">{{userSurveys}}</div>
+                </div>
+            </div>
+            <div id="canvas-holder" class="col-md-6 canvas-holder">
+                <div class="row">
+                    <div class="col-md-6 pie-chart">
+                        <canvas id="chart-area" width="450" height="300" />
+                    </div>
+                </div>
+            </div>
+        </div><br />
+        <div class="content-table score-table">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr class="table-header-row" style="text-align:center">
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>4</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>7</td>
+                            <td>8</td>
+                            <td>9</td>
+                            <td>10</td>
+                            <td>Final Score</td>
+                            <td>Ranking</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="text-align:center">
+                            <td ng-if="countScoreOne != 0">{{getPercentScoreOne}}%</td>
+                            <td ng-if="countScoreOne == 0">0%</td>
+                            <td ng-if="countScoreTwo != 0">{{getPercentScoreTwo}}%</td>
+                            <td ng-if="countScoreTwo == 0">0%</td>
+                            <td ng-if="countScoreThree != 0">{{getPercentScoreThree}}%</td>
+                            <td ng-if="countScoreThree == 0">0%</td>
+                            <td ng-if="countScoreFour != 0">{{getPercentScoreFour}}%</td>
+                            <td ng-if="countScoreFour == 0">0%</td>
+                            <td ng-if="countScoreFive != 0">{{getPercentScoreFive}}%</td>
+                            <td ng-if="countScoreFive == 0">0%</td>
+                            <td ng-if="countScoreSix != 0">{{getPercentScoreSix}}%</td>
+                            <td ng-if="countScoreSix == 0">0%</td>
+                            <td ng-if="countScoreSeven != 0">{{getPercentScoreSeven}}%</td>
+                            <td ng-if="countScoreSeven == 0">0%</td>
+                            <td ng-if="countScoreEight != 0">{{getPercentScoreEight}}%</td>
+                            <td ng-if="countScoreEight == 0">0%</td>
+                            <td ng-if="countScoreNine != 0">{{getPercentScoreNine}}%</td>
+                            <td ng-if="countScoreNine == 0">0%</td>
+                            <td ng-if="countScoreTen != 0">{{getPercentScoreTen}}%</td>
+                            <td ng-if="countScoreTen == 0">0%</td>
+                            <td ng-if="totalScore != 0">{{finalScore}}</td>
+                            <td ng-if="totalScore == 0">0</td>
+                            <td ng-if="ranking == 'Average'" class="ranking-average">
+                                {{ranking}}
+                            </td>
+                            <td ng-if="ranking == 'Fair'" class="ranking-fair">
+                                {{ranking}}
+                            </td>
+                            <td ng-if="ranking == 'Good'" class="ranking-good">
+                                {{ranking}}
+                            </td>
+                            <td ng-if="ranking == 'Excellent'" class="ranking-excellent">
+                                {{ranking}}
+                            </td>
+                            <td ng-if="totalScore == 0"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row question-report" ng-repeat="question in questions">
+            <div class="" ng-if="question.Type == 5 && question.IsOverall">
+                <!--5: Score answer-->
+                <div class="question-title title-col-color">
+                    {{question.Title}}
+                </div>
+                <div class="content-table">
+                    <div class="table-responsive well">
+                        <table class="table table-striped table-question-text-answer"
+                               datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                               dt-instance="dtInstanceCallback">
+                            <thead>
+                                <tr class="table-header-row">
+                                    <td class="col-number">#</td>
+                                    <td class="table-col-participant-name">Participant Name<i></i></td>
+                                    <td class="table-col-participant-email">Email<i></i></td>
+                                    <td class="table-col-time">Time<i></i></td>
+                                    <td class="table-col-score-report">Score<i></i></td>
+                                    <td class="table-col-textanswer">Comment<i></i></td>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr ng-repeat="textAnwser in question.TextAnswers track by textAnwser.Id">
+                                    <td class="col-number">{{$index + 1}}</td>
+                                    <td>
+                                        {{textAnwser.ParticipantFullName}}
+                                    </td>
+
+                                    <td>
+                                        {{textAnwser.ParticipantEmail}}
+                                    </td>
+
+                                    <td ng-if="textAnwser.CreatedDate != null">
+                                        {{textAnwser.CreatedDate | amDateFormat: dateFormat}}
+                                    </td>
+                                    <td ng-if="textAnwser.CreatedDate == null"></td>
+                                    <td class="table-score-td" ng-if="textAnwser.Score != null">
+                                        {{textAnwser.Score}}
+                                    </td>
+                                    <td ng-if="textAnwser.Score == null"></td>
+                                    <td>
+                                        <span ng-bind-html="textAnwser.Answer | cut:true:showTextAnswerOption(textAnwser.Id).limit | convertHtml"></span>
+                                        <div class="toggle-link" ng-click="showMoreContent(textAnwser.Answer, textAnwser.Id)"
+                                             ng-if="textAnwser.Answer.length >= 300">
+                                            {{showTextAnswerOption(textAnwser.Id).title}}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row question-report" ng-repeat="question in questions">
+            <div ng-if="question.Type == 1 || question.Type == 2 || question.Type == 3">
+                <!--1,2: single choice, 3 multiple choice-->
+                <div class="question-title title-col-color">
+                    {{question.Title}}
+                </div>
+                <div class="content-table">
+                    <div class="table-responsive well">
+                        <table class="table table-striped table-question-option"
+                               datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                               dt-instance="dtInstanceCallback">
+                            <thead>
+                                <tr class="table-header-row">
+                                    <td class="col-number">#</td>
+                                    <td class="table-col-answer">Answer<i></i></td>
+                                    <td class="table-col-count">Count<i></i></td>
+                                    <td class="table-col-percentage">Percentage(%)<i></i></td>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr ng-repeat="option in question.Options">
+                                    <td class="col-number">{{$index + 1}}</td>
+                                    <td>{{option.Title}}</td>
+                                    <td>{{option.CountAnswer}}</td>
+                                    <td class="percent-less-middle" ng-if="getTotalForOptionAnswer(question) == 0">0</td>
+                                    <td class="percent-less-middle" ng-if="getTotalForOptionAnswer(question) != 0
+                                    && getPercent(option.CountAnswer, getTotalForOptionAnswer(question)) < 50">
+                                        {{getPercent(option.CountAnswer, getTotalForOptionAnswer(question))}}
+                                    </td>
+
+                                    <td class="percent-middle" ng-if="getTotalForOptionAnswer(question) != 0
+                                    && getPercent(option.CountAnswer, getTotalForOptionAnswer(question)) < 70
+                                    && getPercent(option.CountAnswer, getTotalForOptionAnswer(question)) >= 50">
+                                        {{getPercent(option.CountAnswer, getTotalForOptionAnswer(question))}}
+                                    </td>
+
+                                    <td class="percent-over-middle" ng-if="getTotalForOptionAnswer(question) != 0
+                                    && getPercent(option.CountAnswer, getTotalForOptionAnswer(question)) > 70">
+                                        {{getPercent(option.CountAnswer, getTotalForOptionAnswer(question))}}
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                            <tfoot class="table-footer">
+                                <tr>
+                                    <td></td>
+                                    <td><b>Total</b></td>
+                                    <td><b>{{getTotalForOptionAnswer(question)}}</b></td>
+                                    <td ng-if="getTotalForOptionAnswer(question) == 0"><b>0</b></td>
+                                    <td ng-if="getTotalForOptionAnswer(question) != 0"><b>100</b></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="" ng-if="question.Type == 4">
+                <!--4: text answer-->
+                <div class="question-title title-col-color">
+                    {{question.Title}}
+                </div>
+                <div class="content-table">
+                    <div class="table-responsive well">
+                        <table class="table table-striped table-question-text-answer"
+                               datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                               dt-instance="dtInstanceCallback">
+                            <thead>
+                                <tr class="table-header-row">
+                                    <td class="col-number">#</td>
+                                    <td class="table-col-participant-name">Participant Name<i></i></td>
+                                    <td class="table-col-participant-email">Email<i></i></td>
+                                    <td class="table-col-time">Time<i></i></td>
+                                    <td class="table-col-textanswer">Answer<i></i></td>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr ng-repeat="textAnwser in question.TextAnswers track by textAnwser.Id">
+                                    <td class="col-number">{{$index + 1}}</td>
+                                    <td>
+                                        {{textAnwser.ParticipantFullName}}
+                                    </td>
+
+                                    <td>
+                                        {{textAnwser.ParticipantEmail}}
+                                    </td>
+
+                                    <td ng-if="textAnwser.CreatedDate != null">
+                                        {{textAnwser.CreatedDate | amDateFormat: dateFormat}}
+                                    </td>
+                                    <td ng-if="textAnwser.CreatedDate == null"></td>
+                                    <td>
+                                        <span ng-bind-html="textAnwser.Answer | cut:true:showTextAnswerOption(textAnwser.Id).limit | convertHtml"></span>
+                                        <div class="toggle-link" ng-click="showMoreContent(textAnwser.Answer, textAnwser.Id)"
+                                             ng-if="textAnwser.Answer.length >= 300">
+                                            {{showTextAnswerOption(textAnwser.Id).title}}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="" ng-if="question.Type == 5 && !question.IsOverall">
+                <!--5: Score answer-->
+                <div class="question-title title-col-color">
+                    {{question.Title}}
+                </div>
+                <div class="content-table">
+                    <div class="table-responsive well">
+                        <table class="table table-striped table-question-text-answer"
+                               datatable="ng" dt-options="dtOptions" dt-column-defs="dtColumnDefs"
+                               dt-instance="dtInstanceCallback">
+                            <thead>
+                                <tr class="table-header-row">
+                                    <td class="col-number">#</td>
+                                    <td class="table-col-participant-name">Participant Name<i></i></td>
+                                    <td class="table-col-participant-email">Email<i></i></td>
+                                    <td class="table-col-time">Time<i></i></td>
+                                    <td class="table-col-score-report">Score<i></i></td>
+                                    <td class="table-col-textanswer">Comment<i></i></td>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr ng-repeat="textAnwser in question.TextAnswers track by textAnwser.Id">
+                                    <td class="col-number">{{$index + 1}}</td>
+                                    <td>
+                                        {{textAnwser.ParticipantFullName}}
+                                    </td>
+
+                                    <td>
+                                        {{textAnwser.ParticipantEmail}}
+                                    </td>
+
+                                    <td ng-if="textAnwser.CreatedDate != null">
+                                        {{textAnwser.CreatedDate | amDateFormat: dateFormat}}
+                                    </td>
+                                    <td ng-if="textAnwser.CreatedDate == null"></td>
+                                    <td class="table-score-td" ng-if="textAnwser.Score != null">
+                                        {{textAnwser.Score}}
+                                    </td>
+                                    <td ng-if="textAnwser.Score == null"></td>
+                                    <td>
+                                        <span ng-bind-html="textAnwser.Answer | cut:true:showTextAnswerOption(textAnwser.Id).limit | convertHtml"></span>
+                                        <div class="toggle-link" ng-click="showMoreContent(textAnwser.Answer, textAnwser.Id)"
+                                             ng-if="textAnwser.Answer.length >= 300">
+                                            {{showTextAnswerOption(textAnwser.Id).title}}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,162 @@
+﻿<div class="course-resource">
+    <div class="row">
+
+        <div class="course-resource-action">
+            <div class="general-form">
+                <div class="row">
+                    <div class="form-group required">
+
+                        <div class="col-sm-2 dropdown">
+                            <button class="btn btn-primary-white dropdown-toggle pull-left"
+                                    type="button" data-toggle="dropdown">
+                                Action
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li ng-repeat="action in actions">
+                                    <a href="" ng-click="setAction(action)">
+                                        {{action.name}}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="col-sm-10" ng-if="isAddingLink">
+                            <!-- Add link -->
+                            <form name="linkForm" novalidate>
+                                <label class="pull-left link-name-label required">
+                                    Name
+                                </label>
+                                <div class="pull-left col-sm-4">
+                                    <input class="form-control" type="text" ng-maxlength="100" autocomplete="off"
+                                           ng-model="link.Name" name="name" required />
+                                    <span class="validate-message" ng-show="linkForm.name.$dirty && linkForm.name.$invalid
+                                              || linkForm.$submitted">
+                                        <span ng-show="linkForm.name.$error.required">
+                                            Name is required
+                                        </span>
+                                        <span ng-show="linkForm.name.$error.maxlength">
+                                            Max length of course id is 100 character
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <label class="pull-left link-label">
+                                    Link
+                                </label>
+                                <div class="pull-left col-sm-5">
+                                    <input class="form-control" type="url" autocomplete="off"
+                                           ng-model="link.Url" name="linkUrl" required />
+                                    <span class="validate-message" ng-show="linkForm.linkUrl.$dirty && linkForm.linkUrl.$invalid
+                                              || linkForm.$submitted">
+                                        <span ng-show="linkForm.linkUrl.$error.required">
+                                            Link is required
+                                        </span>
+                                        <span ng-show="linkForm.linkUrl.$error.url">
+                                            Link is invalid
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div class="pull-left link-add">
+                                    <input type="submit" class="btn btn-primary-blue pull-left" ng-disabled="isSendingRequest"
+                                           ng-click="uploadLink(linkForm, link.Name, link.Url)" value="Add">
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="col-sm-10" ng-if="isAddingFile">
+                            <!-- Add file -->
+                            <form name="fileForm" novalidate>
+                                <label class="pull-left upload-file-label required">
+                                    Upload file
+                                </label>
+
+                                <div class="col-sm-6">
+                                    <input class="form-control" type="text" name="uploadFile" autocomplete="off"
+                                           ng-model="file.uploadedFile.name" readonly
+                                           ng-change="changeStatusUpload()" required />
+                                    <span class="validate-message" ng-show="fileForm.$submitted">
+                                        <span ng-show="fileForm.uploadFile.$error.required && !fileForm.uploadedFile.$error.maxSize">
+                                            Upload file is required
+                                        </span>
+                                    </span>
+                                    <span class="validate-message" ng-if="fileForm.uploadedFile.$invalid">
+                                        <span ng-show="fileForm.uploadedFile.$error.maxSize">
+                                            File must be less than 10MB
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div class="col-sm-2">
+                                    <span class="btn btn-primary-blue btn-file">
+                                        Browse <input type="file" ngf-select ng-model="file.uploadedFile" ngf-max-size="10MB"
+                                                      name="uploadedFile" accept="file_extension|audio/*|video/*|image/*|media_type">
+                                    </span>
+                                </div>
+
+                                <div class="col-sm-1 upload">
+                                    <input type="submit" class="btn btn-primary-blue" ng-disabled="isSendingRequest"
+                                           ng-click="uploadFile(fileForm)" value="Upload" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="course-resource-table">
+
+            <div class="content-table">
+                <div class="table-responsive well">
+                    <table datatable="ng" dt-options="dtOptions" class="table table-striped" dt-instance="dtInstanceCallback">
+                        <thead>
+                            <tr class="table-header-row">
+                                <td class="col-number">#</td>
+                                <td>Name<i></i></td>
+                                <td>Type<i></i></td>
+                                <td>Created On<i></i></td>
+                                <td>Created By<i></i></td>
+                                <td>Action</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="document in documents">
+                                <td class="col-number">{{$index + 1}}</td>
+                                <td>
+                                    <a ng-if='document.IsLink' href="{{document.Link}}" target="_blank">
+                                        {{document.Name}}
+                                    </a>
+                                    <a ng-if='!document.IsLink' href="CourseResources/DownloadDocument?documentId={{document.Id}}">
+                                        {{document.Name}}
+                                    </a>
+                                </td>
+
+                                <td>
+                                    <i ng-if="document.Attachment.ContentType"
+                                       ng-repeat="(k,v) in getIconByExtension(document.Attachment.ContentType)" class="{{v}}">
+                                    </i>
+                                    <span ng-if="document.IsLink"><i class="fa fa-link fa-2x"></i></span>
+                                    <span ng-if="getIconByExtension(document.Attachment.ContentType) == null">
+                                        {{document.Attachment.ContentType}}
+                                    </span>
+                                </td>
+                                <td ng-if="document.CreatedDate != null">
+                                    {{ document.CreatedDate | amDateFormat:'MMM, DD YYYY - hh:mm a' }}
+                                </td>
+                                <td>{{document.CreatedBy}}</td>
+                                <td>
+                                    <a href="" ng-click="delete(document.Id)"><i class="fa fa-times"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

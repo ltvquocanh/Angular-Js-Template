@@ -1,0 +1,49 @@
+﻿<div class="menu-survey">
+    <br />
+    <div class="row" ng-if="survey.CourseName != null && survey.CourseName != ''">
+        <div class="content-breadcrumb">
+            <ol class="breadcrumb">
+                <li>
+                    <a ui-sref="viewcourse({id: survey.CourseId})">{{survey.CourseName}}</a>
+                </li>
+                <i class="fa fa-caret-right"></i>
+                <li>
+                    <a ui-sref="class.activity({id: survey.ClassId})">{{survey.ClassName}}</a>
+                </li>
+                <i class="fa fa-caret-right"></i>
+                <li class="survey-title">{{survey.Title}}</li>
+            </ol>
+        </div>
+    </div>
+    <div class="row" ng-if="survey.CourseName == null || survey.CourseName == ''">
+        <div class="content-breadcrumb">
+            <ol class="breadcrumb">
+                <li class="survey-title">{{survey.Title}}</li>
+            </ol>
+        </div>
+    </div>
+    <br />
+    <section>
+        <ul class="nav nav-pills">
+            <li class="nav-tag" ng-if="!survey.IsTemplate">
+                <a ng-class="{active : route == 'survey.general'}"
+                   ng-click="switchTo('survey.general')">GENERAL</a>
+            </li>
+            <li class="nav-tag" ng-if="survey.IsTemplate">
+                <a ng-class="{active : route == 'survey.editsurveytemplate'}"
+                   ng-click="switchTo('survey.editsurveytemplate')">GENERAL</a>
+            </li>
+            <li class="nav-tag">
+                <a ng-class="{active : route == 'survey.question'}"
+                   ng-click="switchTo('survey.question')">QUESTION</a>
+            </li>
+            <li class="nav-tag" ng-if="!survey.IsTemplate">
+                <a ng-class="{active : route == 'survey.reports'}"
+                   ng-click="switchTo('survey.reports')">REPORTS</a>
+            </li>
+        </ul>
+    </section>
+
+</div>
+
+<div class="content-body" ui-view></div>

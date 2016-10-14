@@ -1,0 +1,233 @@
+﻿<div class="course-session">
+    <div class="row">
+        <div class="content-table">
+            <div class="btn-toolbar table-controls">
+                <div class="btn-group pull-right">
+                    <a class="btn btn-secondary" title="Add session" ng-click="openModalAddSession(courseId)">
+                        <i class="fa fa-plus icon"></i>Add session
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive well">
+                <table datatable="ng" dt-options="dtOptions" dt-instance="dtInstanceCallback"
+                       class="table table-striped">
+                    <thead>
+                        <tr class="table-header-row">
+                            <td class="col-number">#</td>
+                            <td>Name<i></i></td>
+                            <td>Duration(hours)<i></i></td>
+                            <td>Action</td>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr ng-repeat="session in sessions">
+                            <td class="col-number">{{$index + 1}}</td>
+                            <td>{{session.Name}}</td>
+                            <td>{{session.Duration}}</td>
+                            <td class="table-control-column">
+                                <a class="btn btn-icon-only" title="Edit session" ng-click="openModalEditSession(session.Id)">
+                                    <i class="fa fa-pencil icon"></i>
+                                </a>
+
+                                <a class="btn btn-icon-only" title="Delete session" ng-click="delete(session.Id)">
+                                    <i class="fa fa-times icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/ng-template" id="addSessionDialog.html">
+    <div class="course-session">
+        <div class="modal-header">
+            <h4>Add Session </h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="addSessionForm" id="addSessionForm" novalidate>
+                    <div class="form-horizontal">
+                        <div class="form-group required">
+                            <label class="control-label col-sm-3 course-session-label" for="name">
+                                Name
+                            </label>
+                            <div class="col-sm-9 coures-session-input">
+                                <input type="text" class="form-control" id="name" placeholder="Name"
+                                       ng-model="newSession.Name" name="sessionName" ng-maxlength="100"
+                                       ng-change="checkExistSessionName(newSession.Name)" required>
+                                <span class="validate-message" ng-show="addSessionForm.sessionName.$dirty
+                                                          || addSessionForm.$submitted">
+                                    <span ng-show="addSessionForm.sessionName.$error.required">
+                                        Name is required
+                                    </span>
+                                </span>
+                                <span class="validate-message" ng-show="addSessionForm.sessionName.$dirty">
+                                    <span ng-show="addSessionForm.sessionName.$error.maxlength">
+                                        Max length of name is 100 character
+                                    </span>
+                                    <span ng-show="isExistSessionName && !addSessionForm.sessionName.$error.required">
+                                        Session name already exists
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group required">
+                            <label class="control-label col-sm-3 course-session-label" for="duration">
+                                Duration
+                            </label>
+                            <div class="col-sm-9 coures-session-input">
+                                <!--max of duration is 1000 hours-->
+                                <input type="number" class="form-control" id="duration"
+                                       placeholder="Duration" ng-model="newSession.Duration"
+                                       ng-change="onDurationChange()" max="1000"
+                                       name="sessionDuration" required>
+                                <span class="validate-message"
+                                      ng-show="addSessionForm.$submitted || addSessionForm.sessionDuration.$dirty">
+                                    <span ng-show="addSessionForm.sessionDuration.$error.required">
+                                        Duration is required
+                                    </span>
+                                    <span ng-show="addSessionForm.sessionDuration.$error.number">
+                                        Not valid number
+                                    </span>
+                                    <span ng-show="addSessionForm.sessionDuration.$error.max">
+                                        Duration is too great
+                                    </span>
+                                    <span ng-show="!checkMinDuration(newSession.Duration)
+                                          && !addSessionForm.sessionDuration.$error.required
+                                          && !addSessionForm.sessionDuration.$error.number
+                                          && !addSessionForm.sessionDuration.$error.max">
+                                        Duration must be greater than 0
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-3 course-session-label" for="description">
+                                Description
+                            </label>
+                            <div class="col-sm-9 coures-session-input description">
+                                <textarea class="form-control" id="description" rows="6" cols="50"
+                                          placeholder="Description" ng-model="newSession.Description"
+                                          name="newSession.description"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="course-session-action action-button">
+                                <button type="button" class="btn btn-primary-gray"
+                                        ng-click="cancel()">
+                                    Cancel
+                                </button>
+                                <input type="submit" form="addSessionForm" class="btn btn-primary-blue"
+                                       ng-disabled="isSendingRequest"
+                                       ng-click="ok(addSessionForm)" value="Save" />
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+</script>
+
+<script type="text/ng-template" id="editSessionDialog.html">
+    <div class="course-session">
+        <div class="modal-header">
+            <h4>Edit Session </h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="editSessionForm" id="editSessionForm" novalidate>
+                    <div class="form-horizontal">
+                        <div class="form-group required">
+                            <label class="control-label col-sm-3 course-session-label" for="name">
+                                Name
+                            </label>
+                            <div class="col-sm-9 coures-session-input">
+                                <input type="text" class="form-control" id="name" placeholder="Name"
+                                       ng-model="sessionUpdate.Name" name="sessionName" ng-maxlength="100"
+                                       ng-change="checkExistSessionName(sessionUpdate.Name)" required>
+                                <span class="validate-message" ng-show="editSessionForm.sessionName.$dirty ||
+                                                            editSessionForm.$submitted">
+                                    <span ng-show="editSessionForm.sessionName.$error.required">
+                                        Name is required
+                                    </span>
+                                </span>
+                                <span class="validate-message" ng-show="editSessionForm.sessionName.$dirty">
+                                    <span ng-show="editSessionForm.sessionName.$error.maxlength">
+                                        Max length of name is 100 character
+                                    </span>
+                                    <span ng-show="isExistSessionName && !editSessionForm.sessionName.$error.required">
+                                        Session name already exists
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group required">
+                            <label class="control-label col-sm-3 course-session-label" for="duration">
+                                Duration
+                            </label>
+                            <div class="col-sm-9 coures-session-input">
+                                <!--max of duration is 1000 hours-->
+                                <input type="number" class="form-control" id="duration"
+                                       placeholder="Duration" ng-model="sessionUpdate.Duration"
+                                       ng-change="onDurationChange()" max="1000"
+                                       name="sessionDuration" required>
+                                <span class="validate-message"
+                                      ng-show="editSessionForm.$submitted || editSessionForm.sessionDuration.$dirty">
+                                    <span ng-show="editSessionForm.sessionDuration.$error.required">
+                                        Duration is required
+                                    </span>
+                                    <span ng-show="editSessionForm.sessionDuration.$error.number">
+                                        Not valid number
+                                    </span>
+                                    <span ng-show="editSessionForm.sessionDuration.$error.max">
+                                        Duration is too great
+                                    </span>
+                                    <span ng-show="!checkMinDuration(sessionUpdate.Duration)
+                                                && !editSessionForm.sessionDuration.$error.required
+                                                && !editSessionForm.sessionDuration.$error.number
+                                                && !editSessionForm.sessionDuration.$error.max">
+                                        Duration must be greater than 0
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-3 course-session-label" for="description">Description</label>
+                            <div class="col-sm-9 coures-session-input description">
+                                <textarea class="form-control" id="description" rows="6" cols="50"
+                                          placeholder="Description" ng-model="sessionUpdate.Description"
+                                          name="sessionDescription"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="course-session-action action-button">
+                                <button type="button" class="btn btn-primary-gray"
+                                        ng-click="cancel()">
+                                    Cancel
+                                </button>
+                                <input type="submit" class="btn btn-primary-blue"
+                                       ng-disabled="isSendingRequest"
+                                       ng-click="ok(editSessionForm)" value="Save" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</script>
+

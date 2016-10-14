@@ -1,0 +1,409 @@
+﻿<div class="row">
+    <h3 class="content-primary-header">
+        {{course.Name}}
+        <a ui-sref="course.general({id: course.Id})" ng-if="hasEditingCoursePermission()">
+            <i class="fa fa-pencil edit-course"></i>
+        </a>
+    </h3>
+</div>
+<div class="row">
+    <div class="row course-description">Course Description</div>
+    <div class="col-md-8">
+        <div class="general-course-info">
+            <div class="row general-course-row">
+                <div class="col-md-3">
+                    <img class="course-image-size" ng-if="course.Image != null" ng-src="Uploads/CourseImages/{{course.Image}}" />
+                    <img class="course-image-size" ng-if="course.Image == null" ng-src="Uploads/CourseImages/icon-noImage.png" />
+                </div>
+                <div class="col-md-9 line-distance summary">
+                    <span ng-bind-html="course.Summary | cut:true:showSumarryOption.limit | convertHtml"></span>
+                    <div class="toggle-link" ng-click="showMoreContent(showSumarryOption)"
+                         ng-if="course.Summary.length >= showSumarryOption.limit">
+                        {{showSumarryOption.title}}
+                    </div>
+                </div>
+            </div>
+            <div class="row general-course-row">
+                <div class="col-md-3 name-field-course">Domain:</div>
+                <div class="col-md-9 line-distance">{{course.DomainName}}</div>
+            </div>
+            <div class="row general-course-row">
+                <div class="col-md-3 name-field-course">Objectives:</div>
+                <div class="col-md-9 line-distance">
+                    <span ng-bind-html="course.Objectives | convertHtml"></span>
+                </div>
+            </div>
+            <div class="row general-course-row">
+                <div class="col-md-3 name-field-course">Target trainees:</div>
+                <div class="col-md-9 line-distance">
+                    <span ng-bind-html="course.TargetTrainees | convertHtml"></span>
+                </div>
+            </div>
+            <div class="row general-course-row">
+                <div class="col-md-3 name-field-course">Pre-requisite:</div>
+                <div class="col-md-9 line-distance">
+                    <span ng-bind-html="course.Prerequisites | convertHtml"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row available-class">
+            <div class="col-md-8">
+                <span ng-if="availableClass() > 0">Available Class ({{availableClass()}})</span>
+                <span ng-if="availableClass() == 0">No Available Class</span>
+            </div>
+            <div class="col-md-4" ng-if="hasAddClassPermission()">
+                <a ui-sref="course.addclass({id: courseId})" class="pull-right btn btn-secondary btn-add-class">
+                    <i class="fa fa-plus-circle"></i>
+                    <span>Add class</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div ng-repeat="classInCourse in courseClasses" class="row course-class-info">
+                    <div ng-if="checkStartTime && !isClassDone(classInCourse)">
+                        <div class="row">
+                            <!--<div class="col-md-10 start-time">
+                                {{getStartTimeFirst(classInCourse) | amDateFormat:'MMM DD, YYYY'}}
+                                <div class="triangle"></div>
+                            </div>-->
+                            <div class="col-md-10 content-primary-header class-name-header">
+                                <span>Class </span>{{$index + 1}}: {{classInCourse.Name}}
+                            </div>
+                            <div class="col-md-2 btn-group pull-right" ng-if="classInCourse.CanEdit || hasEditClassPermission()">
+                                <a class="btn btn-secondary" title="Edit class"
+                                   ui-sref="class.trainermethod({id:classInCourse.Id})">
+                                    <i class="fa fa-pencil icon"></i>Edit class
+                                </a>
+                            </div>
+                        </div>
+                        <div class="trainer-info-title"><b>Presenters Information:</b></div>
+                        <div ng-repeat="classTrainer in classInCourse.ClassTrainers" class="row trainer-info">
+
+                            <div class="col-md-2" style="text-align:center">
+                                <img class="teacher-image-size" ng-src="{{classTrainer.Avatar}}" />
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-2 non-padding-left"><b>Presenter:</b></div>
+                                    <div class="col-md-10 non-padding-left"> {{classTrainer.FullName}}</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2 non-padding-left"><b>Information:</b></div>
+                                    <div class="col-md-10 non-padding-left" ng-bind-html="classTrainer.Introduction"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row available-class-session">
+                            <div class="col-md-2"><b>Available:</b></div>
+                            <div class="col-md-4">
+                                <div class="col-md-10 ">
+                                    <div class="progress" style="border:1px solid {{classInCourse.color}}"
+                                         ng-if="classInCourse.RegistrationNumber < classInCourse.Capacity">
+                                        <div class="progress-bar" role="progressbar" aria-valuenow="60"
+                                             aria-valuemin="0" aria-valuemax="100"
+                                             style="width:{{classInCourse.RegistrationNumber/classInCourse.Capacity*100 + '%'}};background-color:{{classInCourse.color}}">
+                                        </div>
+                                    </div>
+                                    <div class="progress" style="border:1px solid {{classInCourse.color}}"
+                                         ng-if="classInCourse.RegistrationNumber >= classInCourse.Capacity">
+                                        <div class="progress-bar" role="progressbar" aria-valuenow="60"
+                                             aria-valuemin="0" aria-valuemax="100"
+                                             style="width:100%;background-color:{{classInCourse.color}}">
+                                        </div>
+                                    </div>
+                                    <div class="pull-right capacity">{{classInCourse.Capacity}}</div>
+
+                                </div>
+                                <a ng-disabled="isSendingRequest" class="btn btn-icon-only btn-list-registration" title="Registration list" ng-click="showListRegistration(classInCourse.Id)">
+                                    <i class="fa fa-list-alt icon fa-lg "></i>
+                                </a>
+
+                            </div>
+                            <div class="col-md-6" ng-show="!currentUser.IsExternal">
+                                <button class="btn btn-primary-blue pull-right btn-register"
+                                        ng-if=" course.IsVisible && now <= classInCourse.RegistrationDueTime && classInCourse.Status != 'Cancelled'
+                                                && !classInCourse.StatusRegistration
+                                                && !hasRegisterClassForYourTeamPermission()
+                                                && !classInCourse.isTrainerOfClass"
+                                        ng-click="registerClass(classInCourse)">
+                                    Register
+                                </button>
+                                <div class="dropdown">
+                                    <button class="btn btn-primary-blue pull-right dropdown-toggle btn-register"
+                                            type="button" data-toggle="dropdown"
+                                            ng-if=" course.IsVisible && now <= classInCourse.RegistrationDueTime
+                                        && classInCourse.Status != 'Cancelled' && hasRegisterClassForYourTeamPermission()">
+                                        Register
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-pull-right button-dropdown-registration">
+                                        <li>
+                                            <a href=""
+                                               ng-if=" course.IsVisible && now <= classInCourse.RegistrationDueTime
+                                                       && !classInCourse.StatusRegistration
+                                                       && hasRegisterClassForYourTeamPermission()
+                                                       && !classInCourse.isTrainerOfClass"
+                                               ng-click="registerClass(classInCourse)">For myself</a>
+                                        </li>
+                                        <li><a href="" ng-click="registerClassForYourTeam(classInCourse)">For team</a></li>
+                                    </ul>
+                                </div>
+                                <div class="pull-right" style="color:red"
+                                     ng-if="classInCourse.Status != 'Cancelled' && !classInCourse.StatusRegistration
+                                     && now > classInCourse.RegistrationDueTime">
+                                    <b>Registration Closed</b>
+                                </div>
+                                <div class="pull-right" style="color:red"
+                                     ng-if="classInCourse.Status == 'Cancelled'">
+                                    <b>Class Is Canceled</b>
+                                </div>
+                                <div class="pull-right" ng-if="!classInCourse.isTrainerOfClass">
+                                    <span class="text-color-pendding-approval" ng-if="classInCourse.StatusRegistration == 1 && classInCourse.Status != 'Cancelled'">
+                                        <b>Pending Approval</b>
+                                    </span>
+                                    <span class="text-color-approve" ng-if="classInCourse.StatusRegistration == 2 && classInCourse.Status != 'Cancelled'">
+                                        <b>Approved</b>
+                                    </span>
+                                    <span ng-if="classInCourse.StatusRegistration == 3 && classInCourse.Status != 'Cancelled'">
+                                        <b>Requesting Withdrawal</b>
+                                    </span>
+                                    <span ng-if="classInCourse.StatusRegistration == 4 && classInCourse.Status != 'Cancelled'">
+                                        <b>Withdrawal Approved</b>
+                                    </span>
+                                    <span class="text-color-rejected" ng-show="classInCourse.StatusRegistration == 5 && classInCourse.Status != 'Cancelled'">
+                                        <b>Rejected</b>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row session-class">
+                            <div class="col-md-11"><b>Include Sessions:</b></div>
+                            <div class="col-md-1">
+                                <div class="checkbox checkbox-view-course checkbox-primary">
+                                    <input type="checkbox" id="checkboxVisible{{classInCourse.Id}}"
+                                           ng-model="classInCourse.isCheckedAll" ng-click="checkedAll(classInCourse)" />
+                                    <label for="checkboxVisible{{classInCourse.Id}}"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-repeat="session in classInCourse.ClassSessions track by $index">
+                            <div uib-popover="This session is presented by {{session.TrainerName}}"
+                                 popover-trigger=" mouseenter" popover-placement="right" class="row session-class">
+                                <div class="col-md-4" style="word-break: break-all">{{$index +1}}. {{session.Name}}</div>
+                                <div class="col-md-2">{{session.StartTime |  amDateFormat:'MMM DD, YYYY'}}</div>
+                                <div class="col-md-2">
+                                    {{session.StartTime | amDateFormat:'HH:mm'}}
+                                    - {{session.EndTime | amDateFormat:'HH:mm'}}
+                                </div>
+                                <div class="col-md-3">{{session.Room}}</div>
+                                <div class="col-md-1">
+                                    <div class="checkbox checkbox-view-course checkbox-primary">
+                                        <input type="checkbox" id="checbox{{session.Id}}-{{$index + 1}}"
+                                               ng-model="session.Selected" ng-change="optionToggled(classInCourse)" />
+                                        <label for="checbox{{session.Id}}-{{$index + 1}}"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div style="margin-bottom:25px;padding-left:10px;">
+            <div class="row general-course-row">
+                <div class="col-md-1"><img src="Frontend/images/icon-classroom.png" /></div>
+                <div class="col-md-10" ><b>{{course.TrainingMethodValue}}</b></div>
+            </div>
+            <div class="row general-course-row">
+                <div class="col-md-1"><img src="Frontend/images/icon-duration.png" /></div>
+                <div class="col-md-10"><b>{{course.Duration}} hour(s)</b></div>
+            </div>
+            <div class="row general-course-row" ng-if="course.IsCertificateAvailable">
+                <div class="col-md-1"><img src="Frontend/images/icon-certificate.png" /></div>
+                <div class="col-md-10"><b>Certificate Available</b></div>
+            </div>
+        </div>
+        <div class="course-material">
+            <div class="row general-course-row"><div class="col-md-6"><b>Course Materials</b></div></div>
+            <div ng-repeat="document in course.DocumentDtos" class="row general-course-row">
+                <div class="col-md-1">
+                    <i class="fa fa-file-text-o info-icon-material"></i>
+                </div>
+                <div class="col-md-10">
+                    <a href="ViewCourse/DownloadDocument?documentId={{document.Id}}" ng-if="!document.IsLink">
+                        {{document.Name}}
+                    </a>
+                    <a href="{{document.Link}}" ng-if="document.IsLink" target="_blank">{{document.Name}}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/ng-template" id="registerClass.html">
+    <div class="view-course">
+        <div class="modal-header">
+            <h4>Register Class</h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="registerClassForm" novalidate>
+                    <div class="form-horizontal">
+                        <div class="row">
+                            <div class="col-md-12">
+                                You have {{managerNumber}} managers. Please select manager approve for you.
+                            </div>
+                        </div><br />
+                        <div class="row">
+                            <div class="col-md-12 form-group">
+                                <label class="col-md-4">Select your manager:</label>
+                                <div class="col-md-8">
+                                    <select class="form-control"
+                                            ng-options="manager as manager.fullName for manager in managers"
+                                            ng-model="manager.fullName">
+                                        <option value="" hidden></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div><br />
+                        <div class="row">
+                            <div class="col-md-12 form-group">
+                                <div class="pull-right">
+                                    <input class="btn btn-primary-gray" type="button" value="Cancel"
+                                           ng-click="cancel()" />
+                                    <input class="btn btn-primary-blue" type="submit" value="Ok"
+                                           ng-disabled="isSendingRequest" ng-click="ok(registerClassForm)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="registerClassForYourTeam.html">
+    <div class="view-course">
+        <div class="modal-header">
+            <h4>Register Class For Team</h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="registerClassForMemberForm" novalidate>
+                    <div class="form-horizontal">
+                        <div class="form-group form-group-register">
+                            <label style="text-align:center; padding-top: 10px;">Select your member :</label>
+                            <div>
+                                <tags-input ng-model="registeredMembers" display-property="FullName" key-property="Id"
+                                            placeholder="Add a username" replace-spaces-with-dashes="false"
+                                            add-on-blur="false" allow-leftover-text="false"
+                                            add-from-autocomplete-only="true">
+                                    <auto-complete source="loadTags($query)"
+                                                   min-length="0"
+                                                   load-on-focus="true"
+                                                   load-on-empty="true"
+                                                   max-results-to-show="32"
+                                                   template="my-custom-template"></auto-complete>
+                                </tags-input>
+                                <span class="validate-message" ng-if="!registerClassForMemberForm.$valid">
+                                    You have to select in list members
+                                </span>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="form-group">
+                            <div class="action-button">
+                                <input class="btn btn-primary-gray" type="button" value="Cancel"
+                                       ng-click="cancel()" />
+                                <input class="btn btn-primary-blue" type="submit" value="Ok"
+                                       ng-click="ok(registerClassForMemberForm)">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</script>
+<script type="text/ng-template" id="my-custom-template">
+    <div class="right-panel">
+        <span ng-bind-html="$highlight($getDisplayText())"></span>
+        <span>({{data.Username}})</span>
+    </div>
+</script>
+<script type="text/ng-template" id="registrationList.html">
+    <div id="class-registration-list" class="content-table">
+        <div class="modal-header">
+            <h4>Registration List</h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <div class="table-responsive well table-registration-list">
+                    <div class="form-group search-box pull-right">
+                        <span class="glyphicon glyphicon-search search-input">
+                            <input autofocus
+                                   id="search"
+                                   type="text"
+                                   placeholder="Search by name"
+                                   ng-model="registrations.fullName">
+                        </span>
+                    </div>
+                    <table class="table table-striped"
+                           datatable="ng" dt-options="dtOptions"
+                           dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback">
+                        <thead class="blue-tab-header">
+                            <tr class="table-header-row">
+                                <td class="col-number">#</td>
+                                <td>Name<i></i></td>
+                                <td>Project<i></i></td>
+                                <td>Email<i></i></td>
+                                <td>Status<i></i></td>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr ng-repeat="registration in registrations | filter:registrations.fullName">
+                                <td class="col-number">{{$index + 1}}</td>
+                                <td>{{registration.FullName}}</td>
+                                <td>{{registration.ProjectName}}</td>
+                                <td>{{registration.Username}}@tma.com.vn</td>
+                                <td class="class-registration">
+                                    <span class="text-color-pendding-approval" ng-if="registration.Status == 1">
+                                        <b>Pending Approval</b>
+                                    </span>
+                                    <span class="text-color-approve" ng-if="registration.Status == 2">
+                                        <b>Approved</b>
+                                    </span>
+                                    <span ng-if="registration.Status == 3">
+                                        <b>Requesting Withdrawal</b>
+                                    </span>
+                                    <span ng-if="registration.Status == 4">
+                                        <b>Withdrawal Approved</b>
+                                    </span>
+                                    <span class="text-color-rejected" ng-show="registration.Status == 5">
+                                        <b>Rejected</b>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="action">
+                    <input type="button" class="btn btn-primary-gray "
+                           ng-click="close()" value="Close">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>

@@ -1,0 +1,238 @@
+﻿<div class="assignment-trainee" ng-show="isShowAssignment">
+    <div class="row assignment-control">
+        <div class="row">
+            <div class="assignment-title">
+                {{assignment.Name}}
+            </div>
+
+            <div ng-switch on="assignment.Status">
+                <i class="fa fa-calendar-times-o icon-overdue" ng-switch-when="overdue"
+                   tooltip-placement="right" tooltip-animation="false" uib-tooltip="Overdue"
+                   tooltip-class="customTooltip">
+                </i>
+
+                <i class="fa fa-exclamation-circle icon-submit" ng-switch-when="near_deadline"
+                   tooltip-placement="right" tooltip-animation="false" uib-tooltip="Near deadline"
+                   tooltip-class="customTooltip">
+                </i>
+
+                <i class="fa fa-check-circle icon-no-score" ng-switch-when="submitted"
+                   tooltip-placement="right" tooltip-animation="false" uib-tooltip="submitted"
+                   tooltip-class="customTooltip">
+                </i>
+
+                <i class="fa fa-smile-o icon-high-score" ng-switch-when="high_score"
+                   tooltip-placement="right" tooltip-animation="false" uib-tooltip="High score"
+                   tooltip-class="customTooltip">
+                </i>
+
+                <i class="fa fa-meh-o icon-medium-score" ng-switch-when="medium_score"
+                   tooltip-placement="right" tooltip-animation="false" uib-tooltip="Medium score"
+                   tooltip-class="customTooltip">
+                </i>
+
+                <i class="fa fa-frown-o icon-low-score" ng-switch-when="low_score"
+                   tooltip-placement="right" tooltip-animation="false" uib-tooltip="Low score"
+                   tooltip-class="customTooltip">
+                </i>
+            </div>
+        </div>
+
+        <div class="row assignment-note">
+            Added by {{assignment.CreatedBy}} at {{assignment.CreatedDate | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+        </div>
+
+        <div class="row assignment-time">
+            From
+            <span>
+                <b>
+                    {{assignment.StartTime | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                </b>
+            </span>
+            until
+            <span class="end-time">
+                <b>
+                    {{assignment.EndTime | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                </b>
+            </span>
+        </div>
+
+        <div ng-if="assignment.Description">
+            <label for="name" class="description-label">
+                Description
+                <a ng-click="isShowDescription = !isShowDescription">
+                    <i ng-class="{'fa fa-chevron-circle-down': !isShowDescription,
+                                      'fa fa-chevron-circle-up': isShowDescription}">
+                    </i>
+                </a>
+            </label>
+
+            <div ng-bind-html="assignment.Description | convertHtml" class="description-content"
+                 ng-show="isShowDescription">
+            </div>
+        </div>
+
+        <div class="row" ng-if="isShowAttachment">
+            <label class="col-md-2 attach-label">
+                Attached file
+            </label>
+
+            <div class="col-md-10 attached-file">
+                <a href="Assignment/DownloadAttachment?assignmentId={{assignment.Id}}&attachmentId={{assignment.AttachmentId}}">
+                    {{assignment.Attachment.FileName}}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row answer-control" ng-show="assignment.IsParticipant">
+        <div class="row answer-title">
+            YOUR ANSWER
+        </div>
+
+        <div ng-switch on="assignment.Status">
+            <div class="row answer-status cannot-submit" ng-switch-when="cannot_submit">
+                You cannot submit answer at this time
+            </div>
+
+            <div class="row answer-status overdue" ng-switch-when="overdue">
+                Your assignment is overdue
+            </div>
+        </div>
+
+        <div ng-switch="assignment.Status == 'submit' || assignment.Status == 'near_deadline'">
+            <form class="row general-form" ng-switch-when="true"
+                  name="answerForm" novalidate>
+                <div class="row col-md-9 form-group answer-text">
+                    <div text-angular id="textAngularAnswerText" ng-model="assignment.AnswerText" />
+                </div>
+
+                <div class="row col-md-12 form-group">
+                    <label class="col-md-2 attach-file-lable">
+                        Attach file
+                    </label>
+
+                    <div class="col-md-5 input-upload-file">
+                        <input class="col-md-12 " type="text" name="uploadFile" autocomplete="off"
+                               ng-model="assignment.uploadedFile.name" readonly />
+
+                        <span class="maximum-file" ng-show="!answerForm.uploadedFile.$error.maxSize">
+                            Maximum upload file size 5MB
+                        </span>
+
+                        <span class="validate-message" ng-if="answerForm.uploadedFile.$invalid">
+                            <span ng-show="answerForm.uploadedFile.$error.maxSize">
+                                Maximum upload file size 5MB
+                            </span>
+                        </span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <span class="btn btn-primary-blue btn-file">
+                            Browse <input type="file" ngf-select ng-model="assignment.uploadedFile"
+                                          ngf-max-size="5MB" name="uploadedFile"
+                                          accept="file_extension|audio/*|video/*|image/*|media_type">
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row col-sm-3 pull-right">
+                    <input type="submit" class="btn btn-primary-blue"
+                           ng-click="save(answerForm)" value="Save" />
+                </div>
+            </form>
+        </div>
+
+        <div class="row" ng-switch="assignment.Status == 'submitted' || assignment.Status == 'high_score'
+                                        || assignment.Status == 'medium_score' || assignment.Status == 'low_score'">
+            <div ng-switch-when="true">
+                <div class="answer-time assignment-note">
+                    Submitted at {{assignment.AssignmentAnswer.CreatedDate | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                </div>
+
+                <div class="answer-box">
+                    <div ng-bind-html="assignment.AssignmentAnswer.AnswerText | convertHtml" class="row answer-content">
+                    </div>
+
+                    <div class="row" ng-if="isShowAnswerAttachment">
+                        <label class="col-md-2">
+                            Attached file
+                        </label>
+
+                        <div class="col-md-9 attached-file">
+                            <a href="Assignment/DownloadAttachment?assignmentId={{assignment.Id}}&attachmentId={{assignment.AssignmentAnswer.AttachmentId}}">
+                                {{assignment.AssignmentAnswer.Attachment.FileName}}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div ng-switch on="assignment.Status">
+                    <div class=" row score-box" ng-switch-when="high_score">
+                        <div class="col-md-1 range-score high-score">
+                            {{assignment.AssignmentAnswer.Score}}
+                        </div>
+
+                        <span class="col-gray"></span>
+
+                        <div class="col-md-11 comment-box">
+                            <div class="row comment-title">COMMENT</div>
+
+                            <div class="row assignment-note">
+                                Score by {{assignment.AssignmentAnswer.TrainerFullName}}
+                                at {{assignment.AssignmentAnswer.ScoreTime | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                            </div>
+
+                            <div ng-bind-html="assignment.AssignmentAnswer.ScoreComment | convertHtml"
+                                 class="row comment-description">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row score-box" ng-switch-when="medium_score">
+                        <div class="col-md-1 range-score medium-score">
+                            {{assignment.AssignmentAnswer.Score}}
+                        </div>
+
+                        <span class="col-gray"></span>
+
+                        <div class="col-md-11 comment-box">
+                            <div class="row comment-title">COMMENT</div>
+
+                            <div class="row assignment-note">
+                                Score by {{assignment.AssignmentAnswer.TrainerFullName}}
+                                at {{assignment.AssignmentAnswer.ScoreTime | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                            </div>
+
+                            <div ng-bind-html="assignment.AssignmentAnswer.ScoreComment | convertHtml"
+                                 class="row comment-description">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class=" row score-box" ng-switch-when="low_score">
+                        <div class="col-md-1 range-score low-score">
+                            {{assignment.AssignmentAnswer.Score}}
+                        </div>
+
+                        <span class="col-gray"></span>
+
+                        <div class="col-md-11 comment-box">
+                            <div class="row comment-title">COMMENT</div>
+
+                            <div class="row assignment-note">
+                                Score by {{assignment.AssignmentAnswer.TrainerFullName}}
+                                at {{assignment.AssignmentAnswer.ScoreTime | amDateFormat:'MMM DD, YYYY - HH:mm'}}
+                            </div>
+
+                            <div ng-bind-html="assignment.AssignmentAnswer.ScoreComment | convertHtml"
+                                 class="row comment-description">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

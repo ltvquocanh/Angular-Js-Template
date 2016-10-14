@@ -1,0 +1,785 @@
+﻿﻿<div class="time-place">
+    <div class="row">
+        <div class="content-table">
+            <div class="btn-toolbar-add-session btn-toolbar table-controls">
+                <div class="btn-group pull-right" ng-show="hasAddClassSessionPermission()">
+                    <a class="btn btn-secondary" title="Add session" ng-show="!isClassCancel && !isClassDone"
+                       ng-click="openModalAddClassSession()">
+                        <i class="fa fa-plus icon"></i>Add session
+                    </a>
+                    <a class="btn btn-secondary" title="Add session" ng-show="isClassCancel || isClassDone"
+                       popover-template="'templateUpdate.html'"
+                       popover-trigger="mouseenter" popover-placement="top" disabled>
+                        <i class="fa fa-plus icon"></i>Add session
+                    </a>
+                </div>
+            </div>
+            <div class="table-responsive well">
+                <table class="table table-striped"
+                       datatable="ng" dt-options="dtOptions"
+                       dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback">
+                    <thead>
+                        <tr class="table-header-row">
+                            <td class="col-number">#</td>
+                            <td>Session<i></i></td>
+                            <td>From<i></i></td>
+                            <td>To<i></i></td>
+                            <td>Trainer<i></i></td>
+                            <td>Location<i></i></td>
+                            <td>Status</td>
+                            <td ng-show="hasAddClassSessionPermission()">Action</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="session in sessions">
+                            <td class="col-number">{{$index + 1}}</td>
+                            <td>{{session.Name}}</td>
+                            <td>
+                                <span ng-if="session.StartTime != null">
+                                    {{session.StartTime | amDateFormat: dateFormat}}
+                                </span>
+                                <span ng-if="session.StartTime == null"></span>
+                            </td>
+                            <td>
+                                <span ng-if="session.EndTime != null">
+                                    {{session.EndTime | amDateFormat: dateFormat}}
+                                </span>
+                                <span ng-if="session.EndTime == null"></span>
+                            </td>
+                            <td>{{session.TrainerName}}</td>
+                            <td>{{session.Room}}</td>
+                            <td>
+                                <span ng-show="session.StartTime > currentDateTime && !session.IsCancel"
+                                      class="text-align-center courses-class-not-started">
+                                    Not Started
+                                </span>
+                                <span ng-show="session.EndTime == null && session.StartTime == null && !session.IsCancel"
+                                      class="text-align-center courses-class-not-started">
+                                    Not Started
+                                </span>
+                                <span ng-show="session.StartTime <= currentDateTime
+                                       && session.EndTime >= currentDateTime && !session.IsCancel"
+                                      class="text-align-center courses-class-ongoing">
+                                    On Going
+                                </span>
+                                <span ng-show="session.EndTime < currentDateTime && session.EndTime != null
+                                       && session.StartTime != null && !session.IsCancel"
+                                      class="text-align-center courses-class-done">
+                                    Done
+                                </span>
+                                <!--Done -> Canceled-->
+                                <span ng-show="session.IsCancel && session.EndTime < currentDateTime"
+                                      class="text-align-center courses-class-cancelled">
+                                    <span popover-template="'templateUpdateBy.html'"
+                                          popover-trigger="mouseenter" popover-placement="top" ng-show="session.UpdatedBy != null">
+                                        <span class="cancel-reason-pionter" ng-click="openCancelReason(session)" title="Cancel Reason">
+                                            Canceled
+                                        </span>
+                                        <i class="fa fa-info-circle cancel-reason-pionter color-icon-reason"
+                                           ng-show="session.UpdatedBy != null" ng-click="openCancelReason(session)"></i>
+                                    </span>
+                                    <span ng-show="session.UpdatedBy == null"> Canceled</span>
+                                </span>
+                                <!--Not Started -> Canceled-->
+                                <span ng-show="session.StartTime > currentDateTime && session.IsCancel"
+                                      class="text-align-center courses-class-cancelled">
+                                    <span popover-template="'templateUpdateBy.html'"
+                                          popover-trigger="mouseenter" popover-placement="top" ng-show="session.UpdatedBy != null">
+                                        <span class="cancel-reason-pionter" ng-click="openCancelReason(session)" title="Cancel Reason">
+                                            Canceled
+                                        </span>
+                                        <i class="fa fa-info-circle cancel-reason-pionter color-icon-reason"
+                                           ng-show="session.UpdatedBy != null" ng-click="openCancelReason(session)"></i>
+                                    </span>
+                                    <span ng-show="session.UpdatedBy == null"> Canceled</span>
+                                </span>
+                                <!--On Going -> Canceled-->
+                                <span ng-show="session.StartTime <= currentDateTime
+                                       && session.EndTime >= currentDateTime && session.IsCancel"
+                                      class="text-align-center courses-class-cancelled">
+                                    <span popover-template="'templateUpdateBy.html'"
+                                          popover-trigger="mouseenter" popover-placement="top" ng-show="session.UpdatedBy != null">
+                                        <span class="cancel-reason-pionter" ng-click="openCancelReason(session)" title="Cancel Reason">
+                                            Canceled
+                                        </span>
+                                        <i class="fa fa-info-circle cancel-reason-pionter color-icon-reason"
+                                           ng-show="session.UpdatedBy != null" ng-click="openCancelReason(session)"></i>
+                                    </span>
+                                    <span ng-show="session.UpdatedBy == null"> Canceled</span>
+                                </span>
+                            </td>
+                            <td class="table-control-column" ng-show="hasAddClassSessionPermission()">
+                                <!--Edit-->
+                                <a class="btn btn-icon-only" href="" title="Edit"
+                                   ng-show="!checkSessionIsDone(session.EndTime) && !session.IsCancel"
+                                   ng-click="openModalEditClassSession(session.Id)">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                <a class="btn btn-icon-only" href="" uib-popover="Session was Canceled"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   ng-show="!checkSessionIsDone(session.EndTime) && session.IsCancel" disabled>
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                <a class="btn btn-icon-only" href="" uib-popover="Session was done"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   ng-show="checkSessionIsDone(session.EndTime) && !session.IsCancel" disabled>
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                <a class="btn btn-icon-only" href="" uib-popover="Session was Canceled"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   ng-show="checkSessionIsDone(session.EndTime) && session.IsCancel" disabled>
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                                <!--Delete-->
+                                <a class="btn btn-icon-only" href="" title="Delete" ng-click="delete(session.Id)"
+                                   ng-show="!checkSessionIsDone(session.EndTime) && !session.IsCancel">
+                                    <i class="fa fa-times"></i>
+                                </a>
+                                <a class="btn btn-icon-only" href=""
+                                   ng-show="!checkSessionIsDone(session.EndTime) && session.IsCancel"
+                                   uib-popover="Session was Canceled"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-times"></i>
+                                </a>
+                                <a class="btn btn-icon-only" href=""
+                                   ng-show="checkSessionIsDone(session.EndTime) && !session.IsCancel"
+                                   uib-popover="Session was done"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-times"></i>
+                                </a>
+                                <a class="btn btn-icon-only" href=""
+                                   ng-show="checkSessionIsDone(session.EndTime) && session.IsCancel"
+                                   uib-popover="Session was Canceled"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-times"></i>
+                                </a>
+                                <!--Mail-->
+                                <a ng-show="!session.IsMeetingRequestSent && !session.IsCancel
+                                   && session.EndTime >= currentDateTime"
+                                   href="" title="Send Mail"
+                                   class="btn btn-icon-only" ng-click="openModalSendMeetingRequest(session.Id)">
+                                    <i class="fa fa-share-square-o"></i>
+                                </a>
+                                <a ng-show="session.IsMeetingRequestSent && !session.IsCancel"
+                                   href="" uib-popover="Sent Mail"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   class="btn btn-icon-only" disabled>
+                                    <i class="fa fa-share-square-o"></i>
+                                </a>
+                                <a ng-show="session.EndTime < currentDateTime && !session.IsMeetingRequestSent
+                                   && session.EndTime != null && session.StartTime != null
+                                   && !session.IsCancel"
+                                   href="" uib-popover="Session was done"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   class="btn btn-icon-only" disabled>
+                                    <i class="fa fa-share-square-o"></i>
+                                </a>
+                                <a ng-show="!session.IsCancel && !session.IsMeetingRequestSent
+                                   && session.EndTime == null && session.StartTime == null"
+                                   href="" uib-popover="Not set time"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   class="btn btn-icon-only" disabled>
+                                    <i class="fa fa-share-square-o"></i>
+                                </a>
+                                <a ng-show="session.IsCancel"
+                                   href="" uib-popover="Session was Canceled"
+                                   popover-trigger="mouseenter" popover-placement="top"
+                                   class="btn btn-icon-only" disabled>
+                                    <i class="fa fa-share-square-o"></i>
+                                </a>
+                                <!--Cancel-->
+                                <a ng-show="!session.IsCancel && session.StartTime > currentDateTime
+                                   && session.EndTime != null && session.StartTime != null"
+                                   href="" title="Cancel"
+                                   class="btn btn-icon-only" ng-click="cancel(session)">
+                                    <i class="fa fa-ban"></i>
+                                </a>
+                                <a ng-show="!session.IsCancel && session.StartTime <= currentDateTime
+                                   && session.EndTime >= currentDateTime"
+                                   href="" class="btn btn-icon-only" uib-popover="Session is on going"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-ban"></i>
+                                </a>
+                                <a ng-show="!session.IsCancel &&
+                                   checkSessionIsDone(session.EndTime)"
+                                   href="" class="btn btn-icon-only" uib-popover="Session was done"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-ban"></i>
+                                </a>
+                                <a ng-show="session.IsCancel"
+                                   href="" class="btn btn-icon-only" uib-popover="Session was Canceled"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-ban"></i>
+                                </a>
+                                <a ng-show="!session.IsCancel
+                                   && session.EndTime == null && session.StartTime == null"
+                                   href="" class="btn btn-icon-only" uib-popover="Not set time"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-ban"></i>
+                                </a>
+                                <!-- Export Participant of Session-->
+                                <a ng-show="session.StartTime != null && session.EndTime != null" href=""
+                                   class="btn btn-icon-only" title="Export participants of session"
+                                   ng-click="exportParticipantsOfSession(session.Id)">
+                                    <i class="fa fa-upload icon"></i>
+                                </a>
+                                <a ng-show="session.StartTime == null && session.EndTime == null"
+                                   href="" uib-popover="Not set time" class="btn btn-icon-only"
+                                   popover-trigger="mouseenter" popover-placement="top" disabled>
+                                    <i class="fa fa-upload icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/ng-template" id="addClassSessionDialog.html">
+    <div class="time-place">
+        <div class="modal-header">
+            <h4>Add Class Session </h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="addClassSessionForm" id="addClassSessionForm" novalidate>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="inputName">
+                            Name
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <input type="text" class="form-control" id="inputName" placeholder="Name" ng-maxlength="100"
+                                   ng-model="newSession.Name" name="sessionName" autocomplete="off" 
+                                   ng-change="checkExistSessionName(newSession.Name)" required />
+                            <span class="validate-message" ng-show="addClassSessionForm.sessionName.$dirty
+                                                      || addClassSessionForm.$submitted">
+                                <span ng-show="addClassSessionForm.sessionName.$error.required">
+                                    Name is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="addClassSessionForm.sessionName.$dirty">
+                                <span ng-show="isExistSessionName && !addClassSessionForm.sessionName.$error.required">
+                                    Session name already exists
+                                </span>
+                                <span ng-show="addClassSessionForm.sessionName.$error.maxlength">
+                                    Session name should be less than 100 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="inputStarDate">
+                            Start time
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <div class="input-group">
+                                <input type="text" class="form-control"
+                                       name="startdate" id="inputStarDate" autocomplete="off"
+                                       datetime-picker="MMM dd, yyyy - HH:mm" placeholder="Start time"
+                                       ng-model="newSession.StartTime" is-open="isOpenStartDate" required />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default"
+                                            ng-click="openStartDateCalendar($event, 'newSession.StartTime')">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <span class="validate-message" ng-show="addClassSessionForm.startdate.$dirty
+                                                      && addClassSessionForm.startdate.$invalid
+                                                      || addClassSessionForm.$submitted">
+                                <span ng-show="addClassSessionForm.startdate.$error.required">
+                                    Start time is required
+                                </span>
+                                <span ng-show="!addClassSessionForm.startdate.$error.required
+                                         && addClassSessionForm.startdate.$invalid">
+                                    Time format is Jan 08, 2016 - 12:00
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="isRegistrationDeadlineGreaterThanStartTime(newSession.StartTime)">
+                                Start Time cannot less than registration deadline <br />{{registrationDeadline}}
+                            </span>
+                            <span class="validate-message" ng-show="!isStartTimeCorrect()
+                                                                    && !isRegistrationDeadlineGreaterThanStartTime(newSession.StartTime)">
+                                Start time should not be in the past
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-3 time-place-label">
+                            End time
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="enddate" id="inputEndDate"
+                                       datetime-picker="MMM dd, yyyy - HH:mm" placeholder="End time" autocomplete="off"
+                                       ng-model="newSession.EndTime" is-open="isOpenEndDate" required />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default"
+                                            ng-click="openEndDateCalendar($event, 'newSession.EndTime')">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <span class="validate-message" ng-show="addClassSessionForm.enddate.$dirty || addClassSessionForm.$submitted">
+                                <span ng-show="addClassSessionForm.enddate.$error.required">
+                                    End time is required
+                                </span>
+                                <span ng-show="!addClassSessionForm.enddate.$error.required && addClassSessionForm.enddate.$error.datetime">
+                                    Time format is Jan 08, 2016 - 12:00
+                                </span>
+                                <span ng-show="!isEndTimeCorrect() && isStartTimeGreaterThanEndTime()">
+                                    End time should not be in the past
+                                </span>
+                                <span ng-show="!isStartTimeGreaterThanEndTime() 
+                                      && !addClassSessionForm.enddate.$error.required 
+                                      && !addClassSessionForm.enddate.$error.datetime">
+                                    End time must be greater than start time
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="!isInADay() && isStartTimeGreaterThanEndTime()">
+                                Start time and end time should be happening in a day
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="inputTrainer">
+                            Trainer
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <select class="form-control" name="trainer" id="inputTrainer"
+                                    ng-options="classTrainer.Id as classTrainer.Trainer.FullName
+                                            for classTrainer in classTrainers"
+                                    ng-model="newSession.ClassTrainerId">
+                                <option value="" hidden></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="inputLocation">
+                            Location
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <input type="text" class="form-control"
+                                   id="inputLocation" placeholder="Location" autocomplete="off"
+                                   ng-model="newSession.Room" name="location">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="action-button">
+                            <input type="button" value="Cancel" class="btn btn-primary-gray"
+                                   ng-click="cancel()" />
+                            <input type="submit" value="Save" class="btn btn-primary-blue"
+                                   ng-click="ok(addClassSessionForm)" ng-disabled="isSendingRequest">
+                        </div><br />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/ng-template" id="editClassSessionDialog.html">
+    <div class="time-place">
+        <div class="modal-header">
+            <h4>Edit Class Session</h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="editClassSessionForm" novalidate>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="name">
+                            Name
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <input type="text" class="form-control" id="name" placeholder="Name" ng-maxlength="100"
+                                   ng-model="sessionUpdate.Name" name="sessionName" autocomplete="off" 
+                                   ng-change="checkExistSessionName(sessionUpdate.Name)" required />
+                            <span class="validate-message" ng-show="editClassSessionForm.sessionName.$dirty
+                                                      || editClassSessionForm.$submitted">
+                                <span ng-show="editClassSessionForm.sessionName.$error.required">
+                                    Name is required
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="editClassSessionForm.sessionName.$dirty">
+                                <span ng-show="isExistSessionName && !editClassSessionForm.sessionName.$error.required">
+                                    Session name already exists
+                                </span>
+                                <span ng-show="editClassSessionForm.sessionName.$error.maxlength">
+                                    Session name should be less than 100 characters
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="inputStarDate">
+                            Start time
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <div class="input-group">
+                                <input type="text" class="form-control"
+                                       ng-disabled="(session.StartTime <= currentDateTime && session.EndTime >= currentDateTime) ||
+                                                    (session.EndTime < currentDateTime && session.EndTime != null
+                                                                        && session.StartTime != null && !session.IsCancel)"
+                                       name="startdate" id="inputStarDate" autocomplete="off"
+                                       datetime-picker="MMM dd, yyyy - HH:mm" placeholder="Start time"
+                                       ng-change="onStartTimeChange()"
+                                       ng-model="sessionUpdate.StartTime" is-open="isOpenStartDate" required />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default margin-top-10"
+                                            ng-disabled="(session.StartTime <= currentDateTime && session.EndTime >= currentDateTime) ||
+                                                    (session.EndTime < currentDateTime && session.EndTime != null
+                                                                        && session.StartTime != null && !session.IsCancel)"
+                                            ng-click="openStartDateCalendar($event, 'sessionUpdate.StartTime')">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <span class="validate-message" ng-show="editClassSessionForm.startdate.$dirty || editClassSessionForm.$submitted">
+                                <span ng-show="editClassSessionForm.startdate.$error.required">
+                                    Start time is required
+                                </span>
+                                <span ng-show="!editClassSessionForm.startdate.$error.required && editClassSessionForm.startdate.$error.datetime">
+                                    Time format is Jan 08, 2016 - 12:00
+                                </span>
+                                <span ng-show="isRegistrationDeadlineGreaterThanStartTime(sessionUpdate.StartTime)">
+                                    Start Time cannot less than registration deadline <br />{{registrationDeadline}}
+                                </span>
+                                <span ng-show="!isStartTimeCorrect() && !editClassSessionForm.startdate.$error.datetime
+                                      && !isRegistrationDeadlineGreaterThanStartTime(sessionUpdate.StartTime) && !editClassSessionForm.startdate.$error.required">
+                                    Start time should not be in the past
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-3 time-place-label">
+                            End time
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="enddate" id="inputEndDate"
+                                       datetime-picker="MMM dd, yyyy - HH:mm" placeholder="End time"
+                                       ng-model="sessionUpdate.EndTime" autocomplete="off"
+                                       ng-change="onEndTimeChange()"
+                                       is-open="isOpenEndDate" required />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default"
+                                            ng-click="openEndDateCalendar($event, 'sessionUpdate.EndTime')">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <span class="validate-message" ng-show="editClassSessionForm.enddate.$dirty
+                                                      && editClassSessionForm.enddate.$invalid
+                                                      || editClassSessionForm.$submitted">
+                                <span ng-show="editClassSessionForm.enddate.$error.required">
+                                    End time is required
+                                </span>
+                                <span ng-show="!editClassSessionForm.enddate.$error.required
+                                         && editClassSessionForm.enddate.$invalid">
+                                    Time format is Jan 08, 2016 - 12:00
+                                </span>
+                            </span>
+                            <span class="validate-message" ng-show="isEndDateIncorrect && !isDateCheck">
+                                {{messageErrorEndTimeLessCurrentDate}}
+                            </span>
+                            <span class="validate-message" ng-show="isStartTimeGreaterThanEndTime
+                                                                    && !editClassSessionForm.enddate.$invalid">
+                                {{messageErrorEndTimeGreaterStartTime}}
+                            </span>
+                            <span class="validate-message" ng-show="(!isInADay() && !isStartTimeGreaterThanEndTime)
+                                  && sessionUpdate.EndTime != null && sessionUpdate.StartTime != null">
+                                Start time and end time should be happening in a day
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="inputTrainer">
+                            Trainer
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <select class="form-control" name="trainer" id="inputTrainer"
+                                    ng-options="classTrainer.Id as classTrainer.Trainer.FullName
+                                            for classTrainer in classTrainers" autocomplete="off"
+                                    ng-model="sessionUpdate.ClassTrainerId">
+                                <option value="" hidden></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-3 time-place-label" for="name">
+                            Location
+                        </label>
+                        <div class="col-sm-9 time-place-input-bottom">
+                            <input type="text" class="form-control" id="name" placeholder="Location"
+                                   ng-model="sessionUpdate.Room" name="location" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="action-button">
+                            <input class="btn btn-primary-gray" type="button" value="Cancel"
+                                   ng-click="cancel()" />
+                            <input class="btn btn-primary-blue" type="submit" value="Save"
+                                   ng-click="ok(editClassSessionForm)" ng-disabled="isSendingRequest">
+                        </div><br />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/ng-template" id="SendMeetingRequestDialog.html">
+    <div class="time-place">
+        <div class="modal-header">
+            <h4>Send Meeting Request</h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="sendMeetingRequestForm" id="sendMeetingRequestForm" novalidate>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-2" for="to">
+                            To
+                        </label>
+                        <br />
+                        <div class="col-sm-12 message">
+                            <textarea class="form-control" rows="3" cols="50" spellcheck='false'
+                                      placeholder="To" ng-model="mail.to"
+                                      name="to" required></textarea>
+                            <span class="validate-message" ng-show="sendMeetingRequestForm.to.$dirty">
+                                <span ng-show="sendMeetingRequestForm.to.$error.required">
+                                    To email is required
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-2 send-meeting-mail-title" for="cc">
+                            Cc
+                        </label>
+                        <br />
+                        <div class="col-sm-12 message">
+                            <textarea type="text" class="form-control"
+                                      rows="3" cols="50" spellcheck='false'
+                                      placeholder="cc" ng-model="mail.cc"
+                                      name="cc"></textarea>
+                        </div>
+                    </div>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-2 send-meeting-mail-title" for="subject">
+                            Subject
+                        </label>
+                        <br />
+                        <div class="col-sm-12 message">
+                            <input type="text" class="form-control" spellcheck='false'
+                                   placeholder="Subject" ng-model="mail.subject"
+                                   name="subject" required>
+                            <span class="validate-message" ng-show="sendMeetingRequestForm.subject.$dirty">
+                                <span ng-show="sendMeetingRequestForm.subject.$error.required">
+                                    Subject email is required
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-2 send-meeting-mail-title" for="location">
+                            Location
+                        </label>
+                        <br />
+                        <div class="col-sm-12 message">
+                            <input type="text" class="form-control" spellcheck='false'
+                                   placeholder="Location" ng-model="mail.location"
+                                   name="location">
+                        </div>
+                    </div><br />
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-2 time-place-label" for="startdate">
+                            Start time
+                        </label>
+                        <div class="col-sm-4 message send-meeting-mail-start-time">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="startdate" id="startdate" style="width:230px"
+                                       datetime-picker="MMM dd, yyyy - HH:mm" placeholder="Start time"
+                                       is-open="isOpenStartDate" ng-change="onStartTimeChange()"
+                                       ng-model="mail.startTime" autocomplete="off" required />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default"
+                                            ng-click="openStartDateCalendar($event, 'mail.startTime')">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <span class="validate-message" ng-show="sendMeetingRequestForm.startdate.$error.datetime && !isStartTimeInThePast">
+                                Time format is Jan 08, 2016 - 12:00
+                            </span>
+                            <span class="validate-message" ng-show="isStartTimeInThePast">
+                                Start time should not be in the past
+                            </span>
+                        </div>
+
+                        <label class="control-label col-sm-2 time-place-label" style="margin-left: 25px;" for="enddate">
+                            End time
+                        </label>
+                        <div class="col-sm-4 message send-meeting-mail-end-time">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="enddate" id="enddate" style="width:230px"
+                                       datetime-picker="MMM dd, yyyy - HH:mm" placeholder="End time"
+                                       is-open="isOpenEndDate" ng-change="onEndTimeChange()"
+                                       ng-model="mail.endTime" autocomplete="off" required />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default"
+                                            ng-click="openEndDateCalendar($event, 'mail.endTime')">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <span class="validate-message" ng-show="sendMeetingRequestForm.enddate.$error.datetime">
+                                Time format is Jan 08, 2016 - 12:00
+                            </span>
+                            <span class="validate-message" ng-show="isEndTimeInThePast && !isEndTimeLessThenStartTime 
+                                                                    && !sendMeetingRequestForm.enddate.$error.datetime">
+                                End time should not be in the past
+                            </span>
+                            <span class="validate-message" ng-show="isEndTimeLessThenStartTime 
+                                                                    && !sendMeetingRequestForm.enddate.$error.datetime">
+                                End time must be greater than start time
+                            </span>
+                            <span class="validate-message" ng-show="!isInADay() && !isEndTimeLessThenStartTime">
+                                Start time and end time should be happening in a day
+                            </span>
+                        </div>
+                    </div><br />
+                    <div class="row form-group time-place-row">
+                        <label class="control-label col-sm-2" for="content">
+                            Content
+                        </label>
+                        <div class="col-sm-12 message">
+                            <text-angular ng-model="mail.content" spellcheck="false"
+                                          name="content" required></text-angular>
+                        </div>
+                    </div><br />
+                    <div class="row form-group time-place-row required">
+                        <label class="control-label col-sm-3 time-place-label" for="reminder">
+                            Reminder before
+                        </label>
+                        <div class="col-sm-3 meeting-minute">
+                            <select class="form-control" name="minute" id="reminder"
+                                    ng-options="item for item in reminder"
+                                    ng-model="mail.minute" required>
+                                <option value="" hidden></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="action-button">
+                            <input class="btn btn-primary-gray" type="button" value="Cancel"
+                                   ng-click="cancel()" />
+                            <input class="btn btn-primary-blue" type="submit" value="Send" ng-disabled="isSendingRequest"
+                                   ng-click="ok(sendMeetingRequestForm)">
+                        </div>
+                    </div><br />
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/ng-template" id="SendMailCancelSession.html">
+    <div class="time-place">
+        <div class="modal-header">
+            <h4>Send Mail Cancel Session</h4>
+        </div>
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="sendMailCancelSessionForm" id="sendMailCancelSessionForm">
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-12 time-place-label">To</label>
+                        <div class="col-sm-12 message">
+                            <textarea class="form-control" name="to"
+                                      ng-model="mail.to" spellcheck="false"
+                                      rows="2" cols="60" required></textarea>
+                            <span class="validate-message"
+                                  ng-show="sendMailCancelSessionForm.to.$dirty || sendMailCancelSessionForm.$submitted">
+                                <span ng-show="sendMailCancelSessionForm.to.$error.required">
+                                    To is required
+                                </span>
+                                <span ng-show="!sendMailCancelSessionForm.to.$error.required && !checkMailFormat(mail.to)">
+                                    Mail format should be same as example: cdo_tool@tma.com.vn
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-12 time-place-label">Cc</label>
+                        <div class="col-sm-12 message">
+                            <textarea class="form-control"
+                                      rows="2" cols="60" name="cc"
+                                      ng-model="mail.cc" spellcheck="false" required></textarea>
+                            <span class="validate-message"
+                                  ng-show="sendMailCancelSessionForm.cc.$dirty || sendMailCancelSessionForm.$submitted">
+                                <span ng-show="sendMailCancelSessionForm.cc.$error.required">
+                                    Cc is required
+                                </span>
+                                <span ng-show="!sendMailCancelSessionForm.cc.$error.required && !checkMailFormat(mail.cc)">
+                                    Mail format should be same as example: cdo_tool@tma.com.vn
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row form-group required time-place-row">
+                        <label class="control-label col-sm-12 time-place-label" for="content">
+                            Content
+                        </label>
+                        <div class="col-sm-12 message">
+                            <div text-angular ng-model="mail.content"
+                                 spellcheck="false" name="content" required />
+                            <span class="validate-message"
+                                  ng-show="sendMailCancelSessionForm.content.$dirty || sendMailCancelSessionForm.$submitted">
+                                <span ng-show="sendMailCancelSessionForm.content.$error.required">
+                                    Content is required
+                                </span>
+                            </span>
+                        </div>
+                    </div><br />
+                    <div class="row form-group">
+                        <div class="action-button">
+                            <input class="btn btn-primary-gray" type="button" value="Cancel"
+                                   ng-click="cancel()" />
+                            <input class="btn btn-primary-blue" type="submit" value="Send" ng-disabled="isSendingRequest"
+                                   ng-click="ok(sendMailCancelSessionForm)">
+                        </div>
+                    </div><br />
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+<script id="templateUpdateBy.html" type="text/ng-template">
+    <p>
+        Session was canceled by
+        <b>{{session.UpdatedBy}}</b> at
+        <b>{{session.UpdatedDate | amDateFormat:'MMM DD, YYYY - HH:mm' }}</b>. Click to view reason.
+    </p>
+</script>
+<script type="text/ng-template" id="templateCancelReason.html">
+    <div class="time-place">
+        <div class="modal-header">
+            <h4>Cancel Reason</h4>
+        </div>
+        <div class="modal-inside-content">
+            <form class="general-form" name="templateCancelReason" id="templateCancelReason">
+                <div class="row">
+                    <span ng-bind-html="cancelReason | convertHtml"></span>
+                </div><br />
+                <div class="row">
+                    <div class="time-place-action">
+                        <input type="button" class="btn btn-primary-gray"
+                               ng-click="close()" value="Close">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</script>
+<script id="templateUpdate.html" type="text/ng-template">
+    <p ng-show="isClassCancel">Class was Canceled</p>
+    <p ng-show="isClassDone && !isClassCancel">Class was done</p>
+</script>

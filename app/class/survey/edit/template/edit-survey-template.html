@@ -1,0 +1,62 @@
+﻿<div class="edit-survey-template line-top">
+    <form class="form-horizontal" novalidate name="editSurveyTemplateForm" id="editSurveyTemplateForm">
+        <div class="row general-form">
+            <div class="form-group required">
+                <label class="col-md-2">Title</label>
+                <div class="col-md-9">
+                    <input type="text" class="form-control" name="title" maxlength="100"
+                           ng-model="editSurveyTemplate.Title" required />
+                    <span class="validate-message" ng-if="editSurveyTemplateForm.$submitted || editSurveyTemplateForm.title.$dirty">
+                        <span ng-if="editSurveyTemplateForm.title.$error.required">
+                            Title is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group required">
+                <label class="col-md-2">Feedback type</label>
+                <div class="col-md-4 dropdown">
+                    <select class="form-control" name="surveyType" id="surveyType"
+                            ng-options="type.Id as type.Name for type in surveyTypes"
+                            ng-model="editSurveyTemplate.SurveyType" required>
+                        <option value="" hidden></option>
+                    </select>
+                    <span class="validate-message"
+                          ng-show="editSurveyTemplateForm.$submitted || editSurveyTemplateForm.surveyType.$touched">
+                        <span ng-show="editSurveyTemplateForm.surveyType.$error.required">
+                            Feedback type is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group required">
+                <label class="col-md-2">Description</label>
+                <div class="col-md-9">
+                    <textarea class="form-control text-area" rows="4"
+                              ng-model="editSurveyTemplate.Description" name="description" required></textarea>
+                    <span class="validate-message" ng-show="editSurveyTemplateForm.$submitted || editSurveyTemplateForm.description.$dirty">
+                        <span ng-show="editSurveyTemplateForm.description.$error.required">
+                            Description is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2">Thank-you Message</label>
+                <div class="col-md-9">
+                    <textarea class="form-control text-area" rows="4" ng-model="editSurveyTemplate.ThankYou"></textarea>
+                </div>
+            </div>
+        </div><br />
+        <div class="row">
+            <div class="float-right">
+                <input type="button" class="btn btn-primary-gray"
+                       ng-click="cancel()" value="Cancel">
+                <input type="submit" class="btn btn-primary-blue" ng-disabled="isSendingRequest"
+                       ng-click="save(editSurveyTemplateForm)" value="Save">
+            </div>
+        </div>
+    </form>
+</div>

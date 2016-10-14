@@ -1,0 +1,34 @@
+﻿<div class="content-header">
+    <div class="row">
+        <div class="context-menu">
+            <ul class="nav nav-pills nav-justified">
+                <li ng-click="switchTo('course.general')"
+                    ng-class="{active : route == 'course.general'}">
+                    <a>General</a>
+                </li>
+                <li ng-class="{active : route == 'course.session'}"
+                    ng-click="switchTo('course.session')">
+                    <a>Sessions</a>
+                </li>
+                <li ng-click="switchTo('course.resource')"
+                    ng-class="{active : route == 'course.resource'}">
+                    <a>Resources</a>
+                </li>
+                <li ng-class="{active : (route == 'course.class' || route == 'course.addclass')}"
+                    ng-click="switchTo('course.class')">
+                    <a>Classes</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="content-breadcrumb">
+            <ol class="breadcrumb">
+                <li><a ui-sref="viewcourse({id: course.Id})">{{course.Name}}</a></li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<div class="content-body" ui-view></div>

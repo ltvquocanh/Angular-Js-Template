@@ -1,0 +1,258 @@
+﻿<div class="my-class">
+    <div class="row my-class-controls">
+        <div class="col-md-8 content-primary-header">
+            My Classes
+        </div>
+
+        <div class="search-box col-md-3">
+            <span class="glyphicon glyphicon-search search-input">
+                <input autofocus
+                       id="search"
+                       type="text"
+                       placeholder="Search classes"
+                       ng-model="searchClassName.CourseName">
+            </span>
+        </div>
+
+        <div class="col-md-1">
+            <a class="btn btn-secondary btn-sort-my-class" ng-click="sort('StartTime')">
+                <span ng-if="show">
+                    Sort by newest
+                    <i class="fa fa-sort-amount-asc icon"></i>
+                </span>
+                <span ng-if="!show">
+                    Sort by oldest
+                    <i class="fa fa-sort-amount-desc icon"></i>
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <div ng-if="myClasses.length == 0" class="notification-no-data">No data available</div>
+
+    <div ng-repeat="myClass in myClasses | filter: searchClassName | orderBy:predicate:reverse">
+        <div ng-if="myClass.Status == classStatus.RequestingWithdrawal" class="notification-requesting-withdrawal">
+            <b>Your withdrawal request is waiting for approval</b>
+        </div>
+        <div class="row item-my-class" ng-class="getColorByClassStatus(myClass.Status)">
+            <span class="col-index" ng-class="getColor(myClass.Status)"></span>
+
+            <div class="col-md-1">
+                <div class="image-margin-top">
+                    <img ng-if="myClass.ImageName != null" ng-src="Uploads/CourseImages/{{myClass.ImageName}}" />
+                    <img ng-if="myClass.ImageName == null" ng-src="Uploads/CourseImages/icon-noImage.png" />
+                </div>
+            </div>
+
+            <div class="col-md-11 infor-my-class">
+                <div class="col-md-8" style="top:5px">
+                    <div class="row content-secondary-header">
+                        <a ui-sref="viewcourse({id: myClass.CourseId})">
+                            {{myClass.CourseName}}
+                        </a>
+                        <span ng-if="(myClass.Status == classStatus.OnGoing || myClass.Status == classStatus.RequestingWithdrawal)
+                                     && myClass.IsStart"
+                              class="status-ongoing">(Ongoing)</span>
+                    </div>
+
+                    <div class="row infor-domain-name">
+                        {{myClass.DomainName}}
+                    </div>
+
+                    <div class="row infor-note-class"
+                         ng-if="myClass.Status == classStatus.OnGoing || myClass.Status == classStatus.RequestingWithdrawal || myClass.Status == classStatus.Rejected">
+                        <a ng-if="myClass.HasActivity"
+                           ng-click="openModalViewActivities(myClass.ClassId, myClass.Status)"
+                           title="View activities" class="cursor-view-activites">
+                            View activities
+                        </a>
+                        <span ng-if="myClass.NumberPendingActivity > 0" class="number-pending-activities">
+                            {{myClass.NumberPendingActivity}}
+                        </span>
+
+                        <div ng-if=" myClass.Status == classStatus.RequestingWithdrawal">
+                            <b class="font-italic">Requesting withdrawal</b>
+                        </div>
+
+                        <div ng-if="(myClass.Note!=null && myClass.Status != classStatus.Rejected) || myClass.Sessions > 1">
+                            Next session on <span class="color-next-session">
+                                {{myClass.Note.NoteTime | amDateFormat: dateFormat}}
+                            </span>
+                            <span ng-if="myClass.Note.Place != null">
+                                at <span class="color-next-session">{{myClass.Note.Place}}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row status-finish" ng-if="myClass.Status == classStatus.Done">
+                        <a ng-if="myClass.HasActivity"
+                           ng-click="openModalViewActivities(myClass.ClassId, myClass.Status)"
+                           title="View activities" class="cursor-view-activites">
+                            View activities
+                        </a>
+                        <span ng-if="myClass.NumberPendingActivity > 0" class="number-pending-activities">
+                            {{myClass.NumberPendingActivity}}
+                        </span>
+
+                        <div> You have finished this class </div>
+                    </div>
+
+                    <div class="row status-cancelled" ng-if="myClass.Status == classStatus.WithdrawalApproved">
+                        <a ng-if="myClass.HasActivity"
+                           ng-click="openModalViewActivities(myClass.ClassId, myClass.Status)"
+                           title="View activities" class="cursor-view-activites">
+                            View activities
+                        </a>
+
+                        <div>
+                            <b class="font-italic">Withdrawal approved</b>
+                            <span ng-if="myClass.Note.NoteTime != null">
+                                on {{myClass.Note.NoteTime | amDateFormat: dateFormat}}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row status-cancelled" ng-if="myClass.Status == classStatus.Cancelled">
+                        <b class="font-italic">Canceled</b>
+                        <span ng-if="myClass.Note.NoteTime != null">
+                            on {{myClass.Note.NoteTime | amDateFormat: dateFormat}}
+                        </span>
+                    </div>
+
+                    <div class="row status-cancelled"
+                         ng-if="myClass.Status == classStatus.PendingApproval || myClass.Status == classStatus.PendingAcceptance">
+                        <b class="font-italic" ng-if="myClass.Status == classStatus.PendingApproval">Pending approval</b>
+                        <b class="font-italic" ng-if="myClass.Status == classStatus.PendingAcceptance">Pending acceptance</b>
+                        <span ng-if="myClass.Note.NoteTime != null">
+                            on {{myClass.Note.NoteTime | amDateFormat: dateFormat}}
+                        </span>
+                    </div>
+
+                    <div class="row status-cancelled" ng-if="myClass.Status == classStatus.Rejected">
+                        <b class="font-italic">Rejected</b>
+                        <span ng-if="myClass.Note.NoteTime != null">
+                            on {{myClass.Note.NoteTime | amDateFormat: dateFormat}}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="row row-time">
+                        <div class="start-end-time">
+                            {{myClass.StartTime | amDateFormat:'MMM DD, YYYY'}} - {{myClass.EndTime | amDateFormat:'MMM DD, YYYY'}}
+                        </div>
+                    </div>
+
+                    <div class="row infor-trainer">
+                        <div ng-repeat="trainer in myClass.ClassTrainers" class="row-trainer" ng-if="myClass.ClassTrainers.length == 1">
+                            <div class="trainer-have-avatar" ng-if="trainer.Avatar != null && trainer.Avatar != ''">
+                                <img class="trainer-image" ng-src="{{trainer.Avatar}}" />
+                                <div class="trainer-name text-uppercase">{{trainer.FullName}}</div>
+                            </div>
+                            <div ng-if="trainer.Avatar == null || trainer.Avatar == ''">
+                                <img class="trainer-image"
+                                     ng-src="Uploads/CourseImages/DefaultTrainerAvatar.jpg" />
+                                <div class="trainer-name text-uppercase">{{trainer.FullName}}</div>
+                            </div>
+                        </div>
+
+                        <div id="slides_control" class="row-trainer" ng-if="myClass.ClassTrainers.length > 1">
+                            <div class="row">
+                                <carousel>
+                                    <slide ng-repeat="trainer in myClass.ClassTrainers" active="slide.active">
+                                        <img class="trainer-image" ng-if="trainer.Avatar != null && trainer.Avatar != ''"
+                                             ng-src="{{trainer.Avatar}}" />
+                                        <img class="trainer-image" ng-if="trainer.Avatar == null || trainer.Avatar == ''"
+                                             ng-src="Uploads/CourseImages/DefaultTrainerAvatar.jpg" />
+                                        <div class="trainer-name text-uppercase">{{trainer.FullName}}</div>
+                                        <div class="trainer-name">{{$index+1}}/{{myClass.ClassTrainers.length}} trainers</div>
+                                    </slide>
+                                </carousel>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="cancel-registration" uib-popover="Withdraw registration for this class"
+                 popover-trigger="mouseenter" popover-placement="left">
+                <a href="" ng-click="cancelRegistration(myClass.RegistrationId)"
+                   ng-hide="(myClass.Status == 1 && myClass.IsStart && myClass.Sessions.length == 0) || myClass.Status == 6
+                            || myClass.Status == 7 || myClass.Status == 8 || myClass.Status == 2
+                            || myClass.Status == 3 || myClass.Status == 4 || myClass.Status == 5" class="outline">
+                    <span class="glyphicon glyphicon-paste icon-cancel"></span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/ng-template" id="viewActivitiesDialog.html">
+        <div class="my-class view-activities">
+            <div class="modal-header">
+                <h4>View Activities</h4>
+            </div>
+
+            <div class="modal-inside-content">
+                <div class="modal-body">
+                    <form class="general-form" name="viewActivitiesForm" novalidate>
+                        <div class="content-table">
+                            <div class="table-responsive well">
+                                <table class="table table-striped"
+                                       datatable="ng" dt-options="dtOptions"
+                                       dt-column-defs="dtColumnDefs" dt-instance="dtInstanceCallback">
+                                    <thead class="blue-tab-header">
+                                        <tr class="table-header-row">
+                                            <td>#</td>
+                                            <td>Activity Name<i></i></td>
+                                            <td>Type<i></i></td>
+                                            <td>Status<i></i></td>
+                                            <td class="col-date">Due on<i></i></td>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr ng-repeat="note in notes">
+                                            <td> {{$index + 1}}</td>
+                                            <td>
+                                                <a ng-if="note.IsAssignment"
+                                                   href="" ui-sref="assignment({id:note.Id})"
+                                                   ng-click="close()">
+                                                    {{note.Name}}
+                                                </a>
+                                                <a ng-if="note.IsSurvey"
+                                                   href="" ui-sref="viewsurvey({id:note.Id})"
+                                                   ng-click="close()">
+                                                    {{note.Name}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span ng-if="note.IsAssignment">Assigment</span>
+                                                <span ng-if="note.IsSurvey">Feedback</span>
+                                            </td>
+                                            <td class="status-view-activities">
+                                                <span ng-if="note.Status == 1" class="pending">Pending</span>
+                                                <span ng-if="note.Status == 2" class="done">Done</span>
+                                                <span ng-if="note.Status == 3" class="overdue">Overdue</span>
+                                            </td>
+                                            <td>{{note.NoteTime | amDateFormat: dateFormat}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="cancel-view-activities">
+                            <input type="button" class="btn btn-primary-gray"
+                                   ng-click="close()" value="Close">
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </script>
+
+</div>

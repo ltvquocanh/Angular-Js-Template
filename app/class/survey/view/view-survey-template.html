@@ -1,0 +1,176 @@
+﻿<div class="view-survey" ng-show="surveyExist">
+    <form class="general-form " name="previewSurveyFrom" novalidate id="previewSurveyFrom">
+        <div class="survey-title">{{page.Title}}</div>
+        <div class="survey-description" ng-bind-html="page.Description | convertHtml"></div>
+
+        <div class="question-box" ng-repeat="question in page.Questions">
+            <div class="row question-code">
+                Q{{getQuestionCode($index+1,currentPage-1)}} <span class="question-required" aria-hidden="true" ng-show="question.IsRequired" required>*</span>
+            </div>
+
+            <div class="row question-title">{{question.Title}}</div>
+
+            <div class="row question-answer" ng-switch on="question.Type">
+                <div ng-switch-when="1">
+                    <div ng-if="question.IsRequired">
+                        <div class="radio radio-primary" ng-repeat="option in question.Options">
+                            <input type="radio" id="radioOption{{$index + option.QuestionId + 1}}"
+                                   name="option{{option.QuestionId}}" value="{{option.Id}}"
+                                   ng-model="question.OptionId" ng-click="chooseAnswerRadio(option)" required />
+
+                            <label for="radioOption{{$index + option.QuestionId + 1}}">
+                                {{option.Title}}
+                            </label>
+
+                        </div>
+
+                        <span class="validate-message" ng-show="question.OptionId == null && question.IsRequired && isClicked">
+                            Question is required
+                        </span>
+                    </div>
+
+                    <div ng-if="!question.IsRequired">
+                        <div class="radio radio-primary" ng-repeat="option in question.Options">
+                            <input type="radio" id="radioOption{{$index + option.QuestionId + 1}}"
+                                   name="option{{option.QuestionId}}" value="{{option.Id}}"
+                                   ng-model="question.OptionId" ng-click="chooseAnswerRadio(option)" />
+
+                            <label for="radioOption{{$index + option.QuestionId + 1}}">
+                                {{option.Title}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 dropdown single-dropdown-choice" ng-switch-when="2">
+                    <div ng-if="question.IsRequired">
+                        <select class="form-control" id="selectOption" name="optionDropdown"
+                                ng-options="option.Id as option.Title for option in question.Options"
+                                ng-model="question.OptionId" ng-change="chooseAnswerdropdown(question, question.OptionId)" required>
+                            <option value="" hidden></option>
+                        </select>
+                        <span class="validate-message" ng-show="isClicked">
+                            <span ng-show="previewSurveyFrom.optionDropdown.$error.required">
+                                Question is required
+                            </span>
+                        </span>
+                    </div>
+
+                    <div ng-if="!question.IsRequired">
+                        <select class="form-control" id="selectOption" name="option"
+                                ng-options="option as option.Title for option in question.Options"
+                                ng-model="question.OptionId" ng-change="chooseAnswerdropdown(question.OptionId)">
+                            <option value="" hidden></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div ng-switch-when="3">
+                    <div ng-if="question.IsRequired">
+                        <div class="checkbox checkbox-primary" ng-repeat="option in question.Options">
+                            <input type="checkbox" id="checboxOption{{$index + option.QuestionId + 1}}"
+                                   name="option{{option.QuestionId}}"
+                                   ng-model="option.IsChosen" ng-change="chooseAnswerCheck(option)" ng-required="!someSelected(question.Options)" />
+
+                            <label for="checboxOption{{$index + option.QuestionId + 1}}">
+                                {{option.Title}}
+                            </label>
+                        </div>
+                        <span class="validate-message" ng-show="isClicked && question.IsRequired">
+                            <span ng-if="!someSelected(question.Options)">Question is required</span>
+                        </span>
+                    </div>
+                    <div ng-if="!question.IsRequired">
+                        <div class="checkbox checkbox-primary" ng-repeat="option in question.Options">
+                            <input type="checkbox" id="checboxOption{{$index + option.QuestionId + 1}}"
+                                   name="option{{option.QuestionId}}"
+                                   ng-model="option.IsChosen" ng-change="chooseAnswerCheck(option)" />
+
+                            <label for="checboxOption{{$index + option.QuestionId + 1}}">
+                                {{option.Title}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-answer" ng-switch-when="4">
+                    <div ng-if="question.IsRequired">
+                        <textarea class="form-control" rows="6" cols="50" name="textAnswer"
+                                  ng-model="question.TextAnswerParticipant" required></textarea>
+
+                        <span class="validate-message" ng-show="isClicked || previewSurveyFrom.textAnswer.$dirty">
+                            <span ng-show="previewSurveyFrom.textAnswer.$error.required">
+                                Question is required
+                            </span>
+                        </span>
+                    </div>
+
+                    <div ng-if="!question.IsRequired">
+                        <textarea class="form-control" rows="6" cols="50" name="textAnswer"
+                                  ng-model="question.TextAnswerParticipant"></textarea>
+                    </div>
+                </div>
+                <!-- Question's type is "score comment"-->
+                <div class="text-answer" ng-switch-when="5">
+                    <div class="form-group">
+                        <div class="row give-score col-md-12 btn-group" ng-if="question.IsRequired">
+                            <label for="ScoreCommentQ{{getQuestionCode($parent.$index+1,currentPage-1)}}" name="scoreName" required class="score-list btn"
+                                   ng-class="{'btn-low-score': score <= 4, 'btn-average-score': score > 4 && score <= 7, 'btn-high-score': score > 7}"
+                                   ng-repeat="score in scores" ng-model="question.ScoreAnswerParticipant"
+                                   uib-btn-radio="score"
+                                   ng-click="onChooseScoreName('ScoreCommentQ'+getQuestionCode($parent.$index+1,currentPage-1))">
+                                {{score}}
+                            </label>
+                        </div>
+                        <div class="row give-score col-md-12 btn-group" ng-if="!question.IsRequired">
+                            <label for="ScoreCommentQ{{getQuestionCode($parent.$index+1,currentPage-1)}}" name="scoreName" class="score-list btn"
+                                   ng-class="{'btn-low-score': score <= 4, 'btn-average-score': score > 4 && score <= 7, 'btn-high-score': score > 7}"
+                                   ng-repeat="score in scores" ng-model="question.ScoreAnswerParticipant"
+                                   uib-btn-radio="score"
+                                   ng-click="onChooseScoreName('ScoreCommentQ'+getQuestionCode($parent.$index+1,currentPage-1))">
+                                {{score}}
+                            </label>
+                            <a class="btn btn-icon-only  pull-left " title="Reset score" ng-click="question.ScoreAnswerParticipant = null">
+                                <i class="fa fa-refresh icon reset-score "></i>
+                            </a>
+                        </div>
+                        <span ng-show="question.IsRequired && isClicked && !question.ScoreAnswerParticipant"
+                              class="validate-message">Score is required</span>
+                        <div >
+                            <textarea rows="6" cols="50" name="commnentName" class="text-area-question col-md- 12 form-control"
+                                      ng-model="question.TextAnswerParticipant" id="ScoreCommentQ{{getQuestionCode($index+1,currentPage-1)}}"
+                                      
+                                      placeholder="Give your comment (Limited 1000 characters)" maxlength="1000"></textarea>
+                        </div>
+                        <span ng-show="(question.ScoreAnswerParticipant && question.ScoreAnswerParticipant <= question.CommentScoreLevel && !question.TextAnswerParticipant)
+                              || (question.ScoreAnswerParticipant && question.ScoreAnswerParticipant <= question.CommentScoreLevel && question.TextAnswerParticipant.length<=0)"
+                              class="validate-message">
+                            Comment is required if you give score less than or equal {{question.CommentScoreLevel}}
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="thank-you" ng-bind-html="page.ThankYou | convertHtml" ng-show="isSubmitted && thankYouExist"></div>
+
+    </form>
+
+    <div class="btn-control">
+        <button form="previewSurveyFrom" type="button" class="btn btn-primary-gray btn-left" ng-click="back(previewSurveyFrom)"
+                ng-show="isBack" aria-label="Left Align" value="Back">
+            <i class="fa fa-angle-left fa-lg" aria-hidden="true"></i> Back
+        </button>
+
+        <button form="previewSurveyFrom" type="submit" class="btn btn-primary-gray btn-right" ng-click="continue(previewSurveyFrom)"
+                ng-show="isContinue" aria-label="Right Align" value="Continue">
+            Continue <i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>
+        </button>
+
+        <button form="previewSurveyFrom" type="submit" class="btn btn-primary-blue btn-right" ng-click="submit(previewSurveyFrom)"
+                ng-show="isSubmitted">
+            Submit
+        </button>
+    </div>
+</div>

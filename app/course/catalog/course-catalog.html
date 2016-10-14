@@ -1,0 +1,279 @@
+﻿<div class="course-catalog">
+    <div class="background-line-top-color"></div>
+    <div class="row background-course-catalog-color col-md-12">
+        <div class="col-md-3">
+            <div class="trainning-category">TRAINING CATEGORY</div>
+            <div class="domain-tree-category">
+                <div class="col-md-12 btn-group" ng-if="hasAddCoursePermission()">
+                    <a class="btn btn-secondary btn-add-category" title="Add category" ng-click="openModalAddDomain(null)">
+                        <i class="fa fa-plus icon"></i>Add category
+                    </a>
+                </div>
+                <div class="group-category-name">
+                    <div treecontrol
+                         class="tree-light"
+                         tree-model="treeData"
+                         options="treeOptions"
+                         on-selection="onDomainSelection(node)"
+                         expanded-nodes="expandedNodes"
+                         selected-node="selectedDomain">
+
+                        <span class="domainName" >
+                            {{node.Name}}
+                        </span>
+                        <span class="action-domain-name " ng-show="hasAddCoursePermission()">
+                            <i class="fa fa-plus-circle" ng-show="node.onHovering && node.Level <= 5"
+                               ng-click="openModalAddDomain(node)">
+                            </i>
+                            <i class="fa fa-pencil" ng-show="node.onHovering"
+                               ng-click="openModalEditDomain(node)">
+                            </i>
+                            <i class="fa fa-times" ng-show="node.onHovering"
+                               ng-click="deleteDomain(node.Id)">
+                            </i>
+                        </span>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="row course-catalog-controls col-md-12">
+                <div class="col-md-7 content-primary-header">
+                    Available Courses
+                </div>
+                <div class="col-md-5">
+                    <div style="padding-left: 10px;" class="pull-right">
+                        <a class="btn btn-secondary btn-sort-my-class" ng-click="reverse = !reverse">
+                            <span ng-if="!reverse">
+                                Sort by oldest
+                                <i class="fa fa-sort-amount-asc icon"></i>
+                            </span>
+                            <span ng-if="reverse">
+                                Sort by newest
+                                <i class="fa fa-sort-amount-desc icon"></i>
+                            </span>
+                        </a>
+                    </div>
+                  
+                    <div class="btn-group pull-right" ng-if="hasAddCoursePermission() || isTTCCoordinator()">
+                        <a class="btn btn-secondary" title="Add course" ui-sref="addcourse({id:selectedDomain.Id})">
+                            <i class="fa fa-plus icon"></i> Add course
+                        </a>
+                    </div>
+                </div>
+            </div><br />
+
+            <!--Regular user-->
+            <div ng-if="!hasAddCoursePermission() && !isTTCCoordinator()">
+                <div ng-repeat="course in courses |orderBy: 'CreatedDate': reverse" ng-class=" getcolor(course.isvisible)">
+                    <div class="row" ng-if="course.IsVisible">
+                        <div class="col-md-2 display-image-course">
+                            <div class="image-course">
+                                <img ng-if="course.Image != null" ng-src="Uploads/CourseImages/{{course.Image}}" />
+                                <img ng-if="course.Image == null" ng-src="Uploads/CourseImages/icon-noImage.png" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-10 display-infor-course">
+                            <div class="row course-name">
+                                <a ui-sref="viewcourse({id: course.Id})"
+                                   class="content-secondary-header infor-title-course">{{course.Name}}</a>
+                            </div>
+                            <div class="row infor-summary-course line-distance">
+                                <span ng-bind-html="course.Summary | cut:true:200:' ...'"></span>
+                            </div>
+                            <div class="row display-infor-course-detail">
+                                <div class="col-md-2">
+                                    <div class="infor-open-course" ng-show="hasOpenClass(course)">Open classes</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <img src="Frontend/images/icon-classroom.png" />
+                                    <span class="left-distance"> {{course.TrainingMethodValue}}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <i class="fa fa-clock-o fa-lg"></i>
+                                    <span class="infor-duration-course">{{course.Duration}} hour(s)</span>
+                                </div>
+                                <div class="col-md-3" ng-show="course.IsCertificateAvailable">
+                                    <i class="fa fa-graduation-cap fa-lg"></i>
+                                    <span class="left-distance">Certificate</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                </div>
+            </div>
+
+            <!--Permission user: Admin, TTC User, TTC manager, Coordinator-->
+            <div ng-if="hasAddCoursePermission() || isTTCCoordinator()">
+                <div ng-repeat="course in courses |orderBy: 'CreatedDate': reverse" ng-class="getColor(course.IsVisible)">
+                    <div class="row" ng-mouseover="hoverInX(course)" ng-mouseleave="hoverOutX(course)">
+                        <div class="col-md-2 display-image-course">
+                            <div class="image-course">
+                                <img ng-if="course.Image != null" ng-src="Uploads/CourseImages/{{course.Image}}" />
+                                <img ng-if="course.Image == null" ng-src="Uploads/CourseImages/icon-noImage.png" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-10 display-infor-course">
+                            <span class="course-delete-icon">
+                                <i class="fa fa-times fa-2x" ng-show="course.onHovering"
+                                   ng-click="deleteCourse(course.Id)">
+                                </i>
+                            </span>
+                            <div class="row course-name">
+                                <a ui-sref="viewcourse({id: course.Id})"
+                                   class="content-secondary-header infor-title-course">{{course.Name}}</a>
+                            </div>
+                            <div class="row infor-summary-course line-distance">
+                                <span ng-bind-html="course.Summary | cut:true:200:' ...'"></span>
+                            </div>
+                            <div class="row display-infor-course-detail">
+                                <div class="col-md-2">
+                                    <div class="infor-open-course" ng-show="hasOpenClass(course)">Open classes</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <img src="Frontend/images/icon-classroom.png" />
+                                    <span class="left-distance"> {{course.TrainingMethodValue}}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <i class="fa fa-clock-o fa-lg"></i>
+                                    <span class="left-distance infor-duration-course">{{course.Duration}} hour(s)</span>
+                                </div>
+                                <div class="col-md-3" ng-show="course.IsCertificateAvailable">
+                                    <i class="fa fa-graduation-cap fa-lg"></i>
+                                    <span class="left-distance">Certificate</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/ng-template" id="editDomainDialog.html">
+    <div class="course-catalog">
+        <div class="modal-header">
+            <h4>Update Category</h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="editDomainForm" novalidate>
+                    <div class="form-horizontal">
+                        <div class="form-group required">
+                            <label class="col-sm-2 course-catalog-label" for="name">
+                                Name
+                            </label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="name"
+                                       ng-maxlength="100"
+                                       placeholder="Category name"
+                                       ng-model="updatedNode.Name"
+                                       name="name" autofocus
+                                       ng-remote-validate="CourseCatalog/CheckDomainExistence"
+                                       required>
+                                <span class="validate-message"
+                                      ng-show="editDomainForm.name.$dirty || editDomainForm.$submitted">
+                                    <span ng-show="editDomainForm.name.$error.required">
+                                        Category name is required
+                                    </span>
+                                </span>
+                                <span class="validate-message" ng-show="editDomainForm.name.$dirty && editDomainForm.name.$invalid">
+                                    <span ng-show="editDomainForm.name.$error.ngRemoteValidate">
+                                        Category name already exists
+                                    </span>
+                                    <span ng-show="editDomainForm.name.$error.maxlength">
+                                        Category name should be less than 100 characters
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="course-catalog-action action-button">
+                                <button type="button" class="btn btn-primary-gray"
+                                        ng-click="cancel()">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary-blue"
+                                        ng-click="save(editDomainForm)">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</script>
+
+<script type="text/ng-template" id="addDomainDialog.html">
+    <div class="course-catalog">
+        <div class="modal-header">
+            <h4>Add Category</h4>
+        </div>
+
+        <div class="modal-inside-content">
+            <div class="modal-body">
+                <form class="general-form" name="addDomainForm" novalidate>
+                    <div class="form-horizontal">
+
+                        <div class="form-group required">
+                            <label class="control-label col-sm-2 course-catalog-label" for="name">
+                                Name
+                            </label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="name"
+                                       ng-maxlength="100"
+                                       placeholder="Category name"
+                                       ng-model="name"
+                                       name="name" autofocus
+                                       ng-change="checkExistDomainName(name)"
+                                       required>
+                                       <!--ng-remote-validate="CourseCatalog/CheckDomainExistence"-->
+                                <span class="validate-message"
+                                      ng-show="addDomainForm.name.$dirty || addDomainForm.$submitted">
+                                    <span ng-show="addDomainForm.name.$error.required">
+                                        Category name is required
+                                    </span>
+                                </span>
+                                <span class="validate-message"
+                                      ng-show="addDomainForm.name.$dirty">
+                                    <span ng-show="isExistDomainName && !addDomainForm.name.$error.required">
+                                        Category name already exists
+                                    </span>
+                                    <span ng-show="addDomainForm.name.$error.maxlength">
+                                        Category name should be less than 100 characters
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="course-catalog-action action-button">
+                                <button type="button" class="btn btn-primary-gray"
+                                        ng-click="cancel()">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary-blue"
+                                        ng-click="save(addDomainForm)"
+                                        ng-disabled="isExistDomainName">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</script>

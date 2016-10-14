@@ -1,0 +1,179 @@
+﻿<!-- Start form Add Question-->
+<!--ng-show="question.showFormCreateQuestion"-->
+<div ng-show="page.isShow ||question.showFormCreateQuestion" class="survey-page-create-question col-md-12">
+    <div class="header-form form-group">
+        <h4 ng-show="question.isEditing"> Edit Quesion</h4>
+        <h4 ng-show="page.isShow || question.isAdding || question.isCopying"> Add Question</h4>
+    </div>
+   
+    <form name="surveyQuestionForm" class="general-form form-create-question col-md-8" novalidate>
+        <div class="form-horizontal">
+            <div class="form-group required">
+                <label for="" class="col-md-2 control-label">
+                    Question Title
+                </label>
+                <div class="col-md-9">
+                    <input type="text" class="form-control" name="title" ng-model="newQuestion.Title" required ng-maxlength="250" maxlength="250"/>
+                    <span class="validate-message" ng-if="surveyQuestionForm.$submitted || surveyQuestionForm.title.$dirty">
+                        <span ng-if="surveyQuestionForm.title.$error.required">
+                            Question title is required
+                        </span>
+                        <span ng-if="surveyQuestionForm.title.$error.maxlength">
+                            Max length of  question title is 250 character
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group" ng-hide="question.isEditing && question.IsOverall">
+                <label for="" class="col-md-2 control-label">
+                    Question Type
+                </label>
+                <div class="col-md-9">
+                    <div class="col-md-7 question-select">
+                        <select class="form-control" ng-options="questionType.Id as questionType.Name for questionType in questionTypes"
+                                ng-change="onChangeOption(newQuestion)"
+                                ng-model=" newQuestion.Type"></select>
+                    </div>
+                    <div class="checkbox checkbox-primary col-md-5 require-question">
+                        <input type="checkbox" id="checbox1{{Page.Id}}{{question.Id}}{{currentPosition}}" ng-model="newQuestion.IsRequired" />
+                        <label class="label-require-question" for="checbox1{{Page.Id}}{{question.Id}}{{currentPosition}}">Required question</label>
+                    </div>
+                    <div class="form-group">
+                    </div>
+                    <div ng-if="newQuestion.Type ==4">
+                        <textarea ng-disabled="true" class="form-control text-area-question" name="textOption"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div ng-if="newQuestion.Type == 1 || newQuestion.Type == 2 || newQuestion.Type == 3" class="form-group required">
+                <label for="" class="col-md-2 control-label">
+                    Answer Option(s)
+                </label>
+                <div class="col-md-9 question-option">
+                    <div>
+                        <textarea class=" form-control text-area-question" ng-model="newQuestion.Options" name="textOption" required></textarea>
+                        <a class="popover-question-option" popover-trigger="mouseenter" popover-template="'templateQuestionOption.html'" popover-placement="right">
+                            <i class="fa fa-info-circle"></i>
+                        </a>
+                        <span class="validate-message" ng-if="surveyQuestionForm.$submitted || surveyQuestionForm.textOption.$dirty">
+                            <span ng-if="surveyQuestionForm.textOption.$error.required">
+                                Option is required
+                            </span>
+                            <span ng-repeat="message in checkTextOption(newQuestion.Options)">
+                                {{message}}<br />
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div ng-if="newQuestion.Type ==5" class="form-group">
+                <label for="" class="col-md-2 control-label">
+                    Score Comment Level
+                </label>
+                <div class="col-md-9">
+                    <div class="give-score col-md-11 btn-group">
+                        <label class="score-list btn btn-low-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="1">1</label>
+                        <label class="score-list btn btn-low-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="2">2</label>
+                        <label class="score-list btn btn-low-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="3">3</label>
+                        <label class="score-list btn btn-low-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="4">4</label>
+                        <label class="score-list btn btn-average-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="5">5</label>
+                        <label class="score-list btn btn-average-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="6">6</label>
+                        <label class="score-list btn btn-average-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="7">7</label>
+                        <label class="score-list btn btn-high-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="8">8</label>
+                        <label class="score-list btn btn-high-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="9">9</label>
+                        <label class="score-list btn btn-high-score" ng-model="newQuestion.CommentScoreLevel" uib-btn-radio="10">10</label>
+                    </div>
+                </div>
+            </div> <!-- questtionType = 5-->
+            <div class="form-group">
+                <div class="col-md-11">
+                    <div class="pull-right" ng-show="canEditSurvey">
+                        <button class="btn btn-primary-gray " ng-click="page.isShow= false; cancelForm(question)">Cancel</button>
+                        <button ng-disabled="isSendingRequest" ng-show="question.isEditing" class="btn btn-primary-blue" type="submit" ng-click="editQuestion(surveyQuestionForm, newQuestion, question)"> Save </button>
+                        <button ng-disabled="isSendingRequest" ng-show="page.isShow||question.isAdding||question.isCopying" class="btn btn-primary-blue" type="submit" ng-click="addQuestion(surveyQuestionForm, page, newQuestion, $index+1, question)"> Save </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="col-md-4 survey-page-sample">
+        <h4 class="form-group sample-question"> Sample Question </h4>
+        <div ng-if="newQuestion.Type ==1">
+            <form>
+                <p> How often do you want this course to happen ?</p>
+                <div class="radio radio-primary">
+                    <input type="radio" name="radio-option" id="radio-option-11" />
+                    <label class="" for="radio-option-11">  Daily</label>
+                </div>
+                <div class="radio radio-primary">
+                    <input type="radio" name="radio-option" id="radio-option-22" />
+                    <label class="" for="radio-option-22">  Weekly</label>
+                </div>
+                <div class="radio radio-primary">
+                    <input type="radio" name="radio-option" id="radio-option-33" />
+                    <label class="" for="radio-option-33">  Monthly</label>
+                </div>
+                <div class="radio radio-primary">
+                    <input type="radio" name="radio-option" id="radio-option-44" />
+                    <label class="" for="radio-option-44">  Never</label>
+                </div>
+            </form>
+        </div>
+        <div ng-if="newQuestion.Type ==2">
+            <p> Please rate the following aspects of the trainer</p>
+            <select class="form-control">
+                <option value="">Choice rate</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </div>
+        <div ng-if="newQuestion.Type ==3">
+            <p> We are considering several topics for UI/UX Design.</p>
+            <p> What topics are of most interest to you</p>
+            <div class="checkbox checkbox-primary">
+                <input type="checkbox" id="checbox0" />
+                <label class="label-require-question" for="checbox0"> Topic 1</label>
+            </div>
+            <div class="checkbox checkbox-primary">
+                <input type="checkbox" id="checbox2" />
+                <label class="label-require-question" for="checbox2">Topic 2</label>
+            </div>
+            <div class="checkbox checkbox-primary">
+                <input type="checkbox" id="checbox3" />
+                <label class="label-require-question" for="checbox3"> Topic 3</label>
+            </div>
+            <div class="checkbox checkbox-primary">
+                <input type="checkbox" id="checbox4" />
+                <label class="label-require-question" for="checbox4"> Topic 4</label>
+            </div>
+        </div>
+        <div ng-if="newQuestion.Type==4">
+            <p> Any other suggestions or comments to help us improve future training classes ? </p>
+            <textarea ng-disabled="true" class="text-area-question form-control col-md-11">It will be better if I have slide of the course.</textarea>
+        </div>
+        <div ng-if="newQuestion.Type ==5 ">
+            <p> How many points do you evaluate for this class ? </p>
+            <div class="col-md-12" ng-init="tempScore =6">
+                <div class="give-score col-md-11 btn-group">
+                    <label class="score-list btn btn-low-score" ng-model="tempScore" uib-btn-radio="1">1</label>
+                    <label class="score-list btn btn-low-score" ng-model="tempScore" uib-btn-radio="2">2</label>
+                    <label class="score-list btn btn-low-score" ng-model="tempScore" uib-btn-radio="3">3</label>
+                    <label class="score-list btn btn-low-score" ng-model="tempScore" uib-btn-radio="4">4</label>
+                    <label class="score-list btn btn-average-score" ng-model="tempScore" uib-btn-radio="5">5</label>
+                    <label class="score-list btn btn-average-score" ng-model="tempScore" uib-btn-radio="6">6</label>
+                    <label class="score-list btn btn-average-score" ng-model="tempScore" uib-btn-radio="7">7</label>
+                    <label class="score-list btn btn-high-score" ng-model="tempScore" uib-btn-radio="8">8</label>
+                    <label class="score-list btn btn-high-score" ng-model="tempScore" uib-btn-radio="9">9</label>
+                    <label class="score-list btn btn-high-score" ng-model="tempScore" uib-btn-radio="10">10</label>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!--End form Add Question-->
+<script id="templateQuestionOption.html" type="text/ng-template">
+    <p class="hint-information"> Each line is an answer</p>
+</script>

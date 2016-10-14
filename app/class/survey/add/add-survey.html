@@ -1,0 +1,189 @@
+﻿<div class="add-survey">
+    <p class="content-secondary-header">New Feedback</p>
+    <form class="form-horizontal" novalidate name="addSurveyForm" id="addSurveyForm">
+        <div class="row general-form">
+            <p class="content-secondary-header">Feedback Information</p>
+            <div class="form-group required">
+                <label class="col-md-2">Title</label>
+                <div class="col-md-9">
+                    <input type="text" class="form-control" name="title" maxlength="100"
+                           ng-model="newSurvey.Title" required />
+                    <span class="validate-message" ng-if="addSurveyForm.$submitted || addSurveyForm.title.$dirty">
+                        <span ng-if="addSurveyForm.title.$error.required">
+                            Title is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group required">
+                <label class="col-md-2">Feedback type</label>
+                <div class="col-md-4 dropdown">
+                    <select class="form-control" name="surveyType" id="surveyType"
+                            ng-options="type.Id as type.Name for type in surveyTypes"
+                            ng-model="newSurvey.SurveyType" required>
+                        <option value="" hidden></option>
+                    </select>
+                    <span class="validate-message"
+                          ng-show="addSurveyForm.$submitted || addSurveyForm.surveyType.$touched">
+                        <span ng-show="addSurveyForm.surveyType.$error.required">
+                            Feedback type is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group required">
+                <label class="col-md-2">Session</label>
+                <div class="col-md-4 dropdown">
+                    <select class="form-control" name="session" id="selectSession"
+                            ng-options="session.Id as session.Name for session in sessions"
+                            ng-model="newSurvey.ClassSessionId"
+                            ng-change="onChangeSession(newSurvey.ClassSessionId)" required>
+                        <option value="" hidden></option>
+                    </select>
+
+                    <span class="validate-message" ng-show="addSurveyForm.$submitted || addSurveyForm.session.$touched">
+                        <span ng-show="addSurveyForm.session.$error.required">
+                            Session is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group required">
+                <label class="col-md-2">Available From</label>
+                <div class="col-md-4">
+                    <div class="dropdown">
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                   name="startDate" id="inputStarDate" autocomplete="off"
+                                   datetime-picker="MMM dd, yyyy - HH:mm"
+                                   ng-model="newSurvey.StartTime" is-open="isOpenStartDate" required />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default"
+                                        ng-click="openStartDateCalendar($event, 'newSurvey.StartTime')">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    <span class="validate-message" ng-show="addSurveyForm.$submitted || addSurveyForm.startDate.$dirty">
+                        <span ng-show="addSurveyForm.startDate.$error.required">
+                            Start time is required
+                        </span>
+                        <span ng-show="addSurveyForm.startDate.$error.datetime">
+                            Time format is Jan 08, 2016 - 12:00
+                        </span>
+                        <span ng-show="isPastDate(newSurvey.StartTime)">
+                            Start time should not be in the past
+                        </span>
+                    </span>
+                </div>
+                <label class="col-md-1 align-text-center">Until</label>
+                <div class="col-md-4">
+                    <div class="dropdown">
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                   name="endDate" id="inputEndDate" autocomplete="off"
+                                   datetime-picker="MMM dd, yyyy - HH:mm"
+                                   ng-model="newSurvey.EndTime" is-open="isOpenEndDate" required />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default"
+                                        ng-click="openEndDateCalendar($event, 'newSurvey.EndTime')">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <span class="validate-message" ng-show="addSurveyForm.$submitted || addSurveyForm.endDate.$dirty">
+                            <span ng-show="addSurveyForm.endDate.$error.required">
+                                End time is required
+                            </span>
+                            <span ng-show="addSurveyForm.endDate.$error.datetime">
+                                Time format is Jan 08, 2016 - 12:00
+                            </span>
+                            <span ng-show="isStartTimeGreaterThanEndTime(newSurvey.EndTime, newSurvey.StartTime)">
+                                End time must be greater than start time
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group required">
+                <label class="col-md-2">Description</label>
+                <div class="col-md-9">
+                    <textarea class="form-control text-area" rows="4"
+                              ng-model="newSurvey.Description" name="description" required></textarea>
+                    <span class="validate-message" ng-show="addSurveyForm.$submitted || addSurveyForm.description.$dirty">
+                        <span ng-show="addSurveyForm.description.$error.required">
+                            Description is required
+                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2">Thank-you Message</label>
+                <div class="col-md-9">
+                    <textarea class="form-control text-area" rows="4" ng-model="newSurvey.ThankYou"></textarea>
+                </div>
+            </div>
+        </div><br />
+        <div class="row general-form">
+            <p class="content-secondary-header">
+                Feedback Type
+                <div class="btn-group pull-right new-survey-template">
+                    <a class="btn btn-secondary btn-new-survey-template" ui-sref='class.addsurveytemplate({id:classId})'>
+                        <i class="fa fa-plus icon"></i>Add Feedback Template
+                    </a>
+                </div>
+            </p>
+            <p>
+                <label class="radio-inline radio radio-primary">
+                    <input type="radio" name="optradio" id="radio-option-{{$index}}"
+                           ng-click="isNewSurvey(true)" checked />
+                    <label class="" for="radio-option-{{$index}}">  New Feedback</label>
+                </label>
+                <label class="radio-inline radio radio-primary">
+                    <input type="radio" name="optradio" id="radio-option-{{$index + 1}}"
+                           ng-click="isNewSurvey(false)" ng-disabled="hasTemplate" />
+                    <label class="" for="radio-option-{{$index + 1}}" ng-disabled="hasTemplate">  Copy a Feedback Template</label>
+                </label>
+            </p>
+
+            <div class="well well-template" ng-hide="isCopySurvey">
+                <div class="well well-background-color" ng-repeat="surveyTemplate in surveyTemplates">
+                    <div class="form-group row" ng-class="{active:accordion == {{$index + 1}} }">
+                        <label class="radio-inline radio radio-primary col-md-6" ng-click="isAccordion($index)">
+                            <input type="radio" ng-model="$parent.checkedSurvey" ng-value="surveyTemplate" id="{{$index + 1}}">
+                            <label class="" for="{{$index + 1}}">  {{surveyTemplate.Title}}</label>
+                        </label>
+                        <div class="pull-left col-md-6 survey-template-icon">
+                            <a ui-sref="survey.editsurveytemplate({surveyId: surveyTemplate.Id})" title="Edit template">
+                                <i class="fa fa-pencil pencil-icon"></i>
+                            </a>
+                            <a ng-click="removeSurveyTemplate(surveyTemplate.Id)" title="Remove template">
+                                <i class="fa fa-trash trash-icon"></i>
+                            </a>
+                            <a ng-click="preview(surveyTemplate.Id)" title="Preview template">
+                                <i class="fa fa-eye eye-icon pull-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="well well-margin" ng-show="accordion == {{$index + 1}}">
+                        <div ng-repeat="questionTitle in surveyTemplate.QuestionTitles track by $index">
+                            {{$index + 1}}. {{questionTitle}}
+                        </div>
+                    </div>
+                </div>
+            </div><br />
+            <div class="row">
+                <div class="float-right">
+                    <input type="button" class="btn btn-primary-gray"
+                           ng-click="cancel()" value="Cancel">
+                    <input type="submit" class="btn btn-primary-blue" ng-disabled="isSendingRequest"
+                           ng-click="create(addSurveyForm, accordion)" value="Create">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,40 @@
+﻿<div class="content-header">
+    <div class="row">
+        <div class="context-menu">
+            <ul class="nav nav-pills nav-justified">
+                <li ng-click="switchTo('class.trainermethod')"
+                    ng-class="{active : route == 'class.trainermethod'}">
+                    <a>Trainers & Method</a>
+                </li>
+                <li ng-class="{active : route == 'class.session'}"
+                    ng-click="switchTo('class.session')">
+                    <a>Sessions</a>
+                </li>
+                <li ng-click="switchTo('class.participant')"
+                    ng-class="{active : route == 'class.participant'}">
+                    <a>Participants</a>
+                </li>
+                <li ng-class="{active : route == 'class.registration'}"
+                    ng-click="switchTo('class.registration')">
+                    <a>Registrations</a>
+                </li>
+                <li ng-click="switchTo('class.activity')"
+                    ng-class="{active : route == 'class.activity'}">
+                    <a>Activities</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="content-breadcrumb">
+            <ol class="breadcrumb">
+                <li><a ui-sref="viewcourse({id: class.CourseId})">{{class.CourseName}}</a></li>
+                <i class="fa fa-caret-right"></i>
+                <li style="word-break: break-all;" ><a ui-sref="course.class({id: class.CourseId})">{{class.Name}}</a></li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<div class="content-body" ui-view></div>
